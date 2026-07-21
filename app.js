@@ -1,6 +1,63 @@
+var lastDataHash = '';
+
+function fetchDataFromGitHub() {
+    var url = 'https://raw.githubusercontent.com/yhnujmghjk/xietong-kanban/main/data.json';
+    fetch(url, { cache: 'no-store' })
+        .then(function(response) {
+            if (!response.ok) throw new Error('Network response was not ok');
+            return response.text();
+        })
+        .then(function(text) {
+            var hash = text.split('').reduce(function(a, b) { a = ((a << 5) - a) + b.charCodeAt(0); return a & a; }, 0);
+            if (hash !== lastDataHash) {
+                lastDataHash = hash;
+                try {
+                    var data = JSON.parse(text);
+                    loadDataFromGitHub(data);
+                    console.log('数据已同步');
+                } catch (e) {
+                    console.error('解析数据失败:', e);
+                }
+            }
+        })
+        .catch(function(error) {
+            console.log('自动同步失败，使用本地数据:', error);
+        });
+}
+
+function loadDataFromGitHub(data) {
+    if (data.personnel) {
+        var tbody = document.getElementById('personnelBody');
+        tbody.innerHTML = '';
+        data.personnel.forEach(function(p) {
+            var row = document.createElement('tr');
+            row.dataset.dept = p.dept || '';
+            row.dataset.level = p.level || '';
+            row.dataset.labor = p.labor || '';
+            var statusClass = p.status === '正常' ? 'text-state-success' : 'text-state-warning';
+            row.innerHTML =
+                '<td><span class="font-semibold">' + (p.name || '') + '</span></td>' +
+                '<td>' + (p.level || '') + '</td>' +
+                '<td>' + (p.assembly || '') + '</td>' +
+                '<td>' + (p.dept || '') + '</td>' +
+                '<td>' + (p.labor || '') + '</td>' +
+                '<td class="text-hub-text-secondary">' + (p.expYears || '') + '</td>' +
+                '<td class="text-hub-text-secondary">' + (p.age || '') + '</td>' +
+                '<td>' + (p.project || '') + '</td>' +
+                '<td>' + (p.ratio || '') + '</td>' +
+                '<td class="' + statusClass + '">' + (p.status || '') + '</td>' +
+                '<td><button onclick="editPersonnel(this)" class="text-hub-text-secondary hover:text-hub-primary transition-colors px-2 py-1 rounded">&#9998; 编辑</button><button onclick="deletePersonnel(this)" class="text-hub-text-secondary hover:text-state-error transition-colors px-2 py-1 rounded">&#10005; 删除</button></td>';
+            tbody.appendChild(row);
+        });
+    }
+    updateDashboardKPIs();
+    updateStatsPage();
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     lucide.createIcons();
-    updateDashboardKPIs();
+    fetchDataFromGitHub();
+    setInterval(fetchDataFromGitHub, 60000);
 });
 
 function updateDashboardKPIs() {
