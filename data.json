@@ -1,0 +1,13 @@
+{
+    "personnel": [
+        {"name": "张伟", "level": "方案负责人", "assembly": "外覆盖件", "dept": "上车体", "labor": "自有", "expYears": "12年", "age": "35", "project": "FI", "ratio": "100%", "status": "正常"},
+        {"name": "李娜", "level": "工程师", "assembly": "底板", "dept": "下车体", "labor": "自有", "expYears": "5年", "age": "28", "project": "NI", "ratio": "80%", "status": "正常"},
+        {"name": "王强", "level": "工程师", "assembly": "车门", "dept": "开闭件", "labor": "外协", "expYears": "3年", "age": "26", "project": "AI", "ratio": "60%", "status": "经验不足"},
+        {"name": "赵敏", "level": "建模员", "assembly": "翼子板", "dept": "上车体", "labor": "自有", "expYears": "2年", "age": "25", "project": "FI", "ratio": "50%", "status": "正常"},
+        {"name": "刘洋", "level": "总成负责人", "assembly": "开闭件系统", "dept": "开闭件", "labor": "自有", "expYears": "15年", "age": "38", "project": "C1", "ratio": "30%", "status": "进度风险"},
+        {"name": "陈晨", "level": "建模员", "assembly": "后地板", "dept": "下车体", "labor": "外协", "expYears": "1年", "age": "24", "project": "D2", "ratio": "10%", "status": "新人"}
+    ],
+    "projects": ["FI", "NI", "AI", "C1", "D2"],
+    "projectStatus": {"FI": "进行中", "NI": "进行中", "AI": "规划中", "C1": "暂停", "D2": "规划中"},
+    "matrix": {}
+}
