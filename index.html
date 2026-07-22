@@ -164,30 +164,10 @@
                                 <thead id="matrixHead">
                                     <tr>
                                         <th style="white-space:nowrap;min-width:120px;">里程碑 \ 项目</th>
-                                        <th style="text-align:center;min-width:64px;position:relative;">
+                                        <th style="text-align:center;min-width:64px;position:relative;border-right:1px solid var(--hub-border);">
                                             FI
                                             <button class="col-del-btn" title="删除项目 FI" onclick="deleteProjectColumn(this)">&times;</button>
-                                            <select class="proj-status-select" data-status="进行中" onchange="updateProjStatus(this)"><option selected>进行中</option><option>暂停</option><option>规划中</option></select>
-                                        </th>
-                                        <th style="text-align:center;min-width:64px;position:relative;">
-                                            NI
-                                            <button class="col-del-btn" title="删除项目 NI" onclick="deleteProjectColumn(this)">&times;</button>
-                                            <select class="proj-status-select" data-status="进行中" onchange="updateProjStatus(this)"><option selected>进行中</option><option>暂停</option><option>规划中</option></select>
-                                        </th>
-                                        <th style="text-align:center;min-width:64px;position:relative;">
-                                            AI
-                                            <button class="col-del-btn" title="删除项目 AI" onclick="deleteProjectColumn(this)">&times;</button>
-                                            <select class="proj-status-select" data-status="进行中" onchange="updateProjStatus(this)"><option selected>进行中</option><option>暂停</option><option>规划中</option></select>
-                                        </th>
-                                        <th style="text-align:center;min-width:64px;position:relative;">
-                                            C1
-                                            <button class="col-del-btn" title="删除项目 C1" onclick="deleteProjectColumn(this)">&times;</button>
-                                            <select class="proj-status-select" data-status="规划中" onchange="updateProjStatus(this)" style="color:var(--hub-text-dim);"><option>进行中</option><option>暂停</option><option selected>规划中</option></select>
-                                        </th>
-                                        <th style="text-align:center;min-width:64px;position:relative;">
-                                            D2
-                                            <button class="col-del-btn" title="删除项目 D2" onclick="deleteProjectColumn(this)">&times;</button>
-                                            <select class="proj-status-select" data-status="规划中" onchange="updateProjStatus(this)" style="color:var(--hub-text-dim);"><option>进行中</option><option>暂停</option><option selected>规划中</option></select>
+                                            <select class="proj-status-select" data-status="进行中" onchange="updateProjStatus(this)" style="color:var(--state-success);"><option selected>进行中</option><option>暂停</option><option>规划中</option></select>
                                         </th>
                                         <th style="text-align:center;min-width:64px;position:relative;">
                                             <span class="text-hub-text-dim cursor-pointer text-base" title="添加项目" onclick="showAddProjectColumnModal()">+</span>
@@ -199,188 +179,124 @@
                                         <td style="white-space:nowrap;">
                                             <div class="proj-name text-[11px] text-hub-text-dim font-semibold uppercase tracking-[0.5px]">角色信息</div>
                                         </td>
-                                        <td></td><td></td><td></td><td></td><td></td>
+                                        <td style="border-right:1px solid var(--hub-border);"></td>
                                     </tr>
                                     <tr>
                                         <td style="white-space:nowrap;border-bottom:2px solid var(--hub-border);">
                                             <div class="proj-name">分项目经理</div>
                                         </td>
-                                        <td style="text-align:center;border-bottom:2px solid var(--hub-border);"><span class="role-name-cell" onclick="editRoleName(this)">张三</span></td>
-                                        <td style="text-align:center;border-bottom:2px solid var(--hub-border);"><span class="role-name-cell" onclick="editRoleName(this)">赵六</span></td>
-                                        <td style="text-align:center;border-bottom:2px solid var(--hub-border);"><span class="role-name-cell" onclick="editRoleName(this)">周九</span></td>
-                                        <td style="text-align:center;border-bottom:2px solid var(--hub-border);"><span class="role-name-cell" onclick="editRoleName(this)">冯二</span></td>
-                                        <td style="text-align:center;border-bottom:2px solid var(--hub-border);"><span class="role-name-cell" onclick="editRoleName(this)">陈三</span></td>
+                                        <td style="text-align:center;border-bottom:2px solid var(--hub-border);border-right:1px solid var(--hub-border);"><span class="role-name-cell" onclick="editRoleName(this)">张三</span></td>
                                     </tr>
                                     <tr>
                                         <td style="white-space:nowrap;border-bottom:2px solid var(--hub-border);">
                                             <div class="proj-name">质量经理</div>
                                         </td>
-                                        <td style="text-align:center;border-bottom:2px solid var(--hub-border);"><span class="role-name-cell" onclick="editRoleName(this)">李四</span></td>
-                                        <td style="text-align:center;border-bottom:2px solid var(--hub-border);"><span class="role-name-cell" onclick="editRoleName(this)">钱七</span></td>
-                                        <td style="text-align:center;border-bottom:2px solid var(--hub-border);"><span class="role-name-cell" onclick="editRoleName(this)">吴十</span></td>
-                                        <td style="text-align:center;border-bottom:2px solid var(--hub-border);"><span class="role-name-cell" onclick="editRoleName(this)">郑一</span></td>
-                                        <td style="text-align:center;border-bottom:2px solid var(--hub-border);"><span class="role-name-cell" onclick="editRoleName(this)">-</span></td>
+                                        <td style="text-align:center;border-bottom:2px solid var(--hub-border);border-right:1px solid var(--hub-border);"><span class="role-name-cell" onclick="editRoleName(this)">李四</span></td>
                                     </tr>
                                     <tr id="subAssemblyToggle" onclick="toggleSubAssembly()">
                                         <td style="white-space:nowrap;border-bottom:2px solid var(--hub-border);">
                                             <div class="proj-name flex items-center gap-1.5">总成负责人 <span id="subAssemblyArrow" class="text-[10px] text-hub-text-dim transition-transform inline-block">▸</span></div>
                                         </td>
-                                        <td style="text-align:center;border-bottom:2px solid var(--hub-border);"></td><td style="text-align:center;border-bottom:2px solid var(--hub-border);"></td><td style="text-align:center;border-bottom:2px solid var(--hub-border);"></td><td style="text-align:center;border-bottom:2px solid var(--hub-border);"></td><td style="text-align:center;border-bottom:2px solid var(--hub-border);"></td>
+                                        <td style="text-align:center;border-bottom:2px solid var(--hub-border);border-right:1px solid var(--hub-border);"></td>
                                     </tr>
                                     <tbody id="subAssemblyRows" style="display:none;">
                                         <tr style="background:rgba(79,140,255,0.04);">
                                             <td style="white-space:nowrap;padding-left:1.5rem;">
                                                 <div class="proj-name text-sm text-hub-text-secondary">└ 上车体</div>
                                             </td>
-                                            <td style="text-align:center;"><span class="role-name-cell" onclick="editRoleName(this)">-</span></td>
-                                            <td style="text-align:center;"><span class="role-name-cell" onclick="editRoleName(this)">孙八</span></td>
-                                            <td style="text-align:center;"><span class="role-name-cell" onclick="editRoleName(this)">吴十</span></td>
-                                            <td style="text-align:center;"><span class="role-name-cell" onclick="editRoleName(this)">-</span></td>
-                                            <td style="text-align:center;"><span class="role-name-cell" onclick="editRoleName(this)">-</span></td>
+                                            <td style="text-align:center;border-right:1px solid var(--hub-border);"><span class="role-name-cell" onclick="editRoleName(this)">-</span></td>
                                         </tr>
                                         <tr style="background:rgba(79,140,255,0.04);">
                                             <td style="white-space:nowrap;padding-left:1.5rem;">
                                                 <div class="proj-name text-sm text-hub-text-secondary">├ 下车体</div>
                                             </td>
-                                            <td style="text-align:center;"><span class="role-name-cell" onclick="editRoleName(this)">王五</span></td>
-                                            <td style="text-align:center;"><span class="role-name-cell" onclick="editRoleName(this)">-</span></td>
-                                            <td style="text-align:center;"><span class="role-name-cell" onclick="editRoleName(this)">郑一</span></td>
-                                            <td style="text-align:center;"><span class="role-name-cell" onclick="editRoleName(this)">-</span></td>
-                                            <td style="text-align:center;"><span class="role-name-cell" onclick="editRoleName(this)">-</span></td>
+                                            <td style="text-align:center;border-right:1px solid var(--hub-border);"><span class="role-name-cell" onclick="editRoleName(this)">王五</span></td>
                                         </tr>
                                         <tr style="background:rgba(79,140,255,0.04);">
                                             <td style="white-space:nowrap;padding-left:1.5rem;">
                                                 <div class="proj-name text-sm text-hub-text-secondary">└ 开闭件</div>
                                             </td>
-                                            <td style="text-align:center;"><span class="role-name-cell" onclick="editRoleName(this)">-</span></td>
-                                            <td style="text-align:center;"><span class="role-name-cell" onclick="editRoleName(this)">孙八</span></td>
-                                            <td style="text-align:center;"><span class="role-name-cell" onclick="editRoleName(this)">-</span></td>
-                                            <td style="text-align:center;"><span class="role-name-cell" onclick="editRoleName(this)">-</span></td>
-                                            <td style="text-align:center;"><span class="role-name-cell" onclick="editRoleName(this)">-</span></td>
+                                            <td style="text-align:center;border-right:1px solid var(--hub-border);"><span class="role-name-cell" onclick="editRoleName(this)">-</span></td>
                                         </tr>
                                     </tbody>
 
-                                    <tr><td colspan="6" style="height:1px;padding:0;border:none;background:var(--hub-border);"></td></tr>
+                                    <tr><td colspan="2" style="height:1px;padding:0;border:none;background:var(--hub-border);"></td></tr>
 
                                     <tr style="background:var(--hub-surface-elevated);">
                                         <td style="white-space:nowrap;">
                                             <div class="proj-name text-[11px] text-hub-text-dim font-semibold uppercase tracking-[0.5px]">技术交付</div>
                                         </td>
-                                        <td></td><td></td><td></td><td></td><td></td>
+                                        <td style="border-right:1px solid var(--hub-border);"></td>
                                     </tr>
 
                                     <tr>
                                         <td style="white-space:nowrap;">
                                             <div class="proj-name">DTS</div>
                                         </td>
-                                        <td style="text-align:center;" onclick="showCellEditor(event,this,'FI','DTS')" data-status="ok" data-pct="80"><span class="dts-cell-display"><span class="status-cell ok">✓</span><span class="text-[12px] font-semibold text-[#34d399]">80%</span></span></td>
-                                        <td style="text-align:center;" onclick="showCellEditor(event,this,'NI','DTS')" data-status="warn" data-pct="60"><span class="dts-cell-display"><span class="status-cell warn">⚠</span><span class="text-[12px] font-semibold text-[#fbbf24]">60%</span></span></td>
-                                        <td style="text-align:center;" onclick="showCellEditor(event,this,'AI','DTS')" data-status="err" data-pct="20"><span class="dts-cell-display"><span class="status-cell err">✗</span><span class="text-[12px] font-semibold text-[#f87171]">20%</span></span></td>
-                                        <td style="text-align:center;" onclick="showCellEditor(event,this,'C1','DTS')" data-status="na" data-pct="0"><span class="dts-cell-display"><span class="status-cell na">-</span><span class="text-[12px] font-semibold text-hub-text-dim">0%</span></span></td>
-                                        <td style="text-align:center;" onclick="showCellEditor(event,this,'D2','DTS')" data-status="na" data-pct="0"><span class="dts-cell-display"><span class="status-cell na">-</span><span class="text-[12px] font-semibold text-hub-text-dim">0%</span></span></td>
+                                        <td style="text-align:center;border-right:1px solid var(--hub-border);" onclick="showCellEditor(event,this,'FI','DTS')" data-status="ok" data-pct="80"><span class="dts-cell-display"><span class="status-cell ok">✓</span><span class="text-[12px] font-semibold text-[#34d399]">80%</span></span></td>
                                     </tr>
                                     <tr>
                                         <td style="white-space:nowrap;">
                                             <div class="proj-name">技术方案</div>
                                         </td>
-                                        <td style="text-align:center;" onclick="showCellEditor(event,this,'FI','技术方案')" data-status="ok" data-pct="60"><span class="dts-cell-display"><span class="status-cell ok">✓</span><span class="text-[12px] font-semibold text-[#34d399]">60%</span></span></td>
-                                        <td style="text-align:center;" onclick="showCellEditor(event,this,'NI','技术方案')" data-status="err" data-pct="30"><span class="dts-cell-display"><span class="status-cell err">✗</span><span class="text-[12px] font-semibold text-[#f87171]">30%</span></span></td>
-                                        <td style="text-align:center;" onclick="showCellEditor(event,this,'AI','技术方案')" data-status="na" data-pct="0"><span class="dts-cell-display"><span class="status-cell na">-</span><span class="text-[12px] font-semibold text-hub-text-dim">0%</span></span></td>
-                                        <td style="text-align:center;" onclick="showCellEditor(event,this,'C1','技术方案')" data-status="na" data-pct="0"><span class="dts-cell-display"><span class="status-cell na">-</span><span class="text-[12px] font-semibold text-hub-text-dim">0%</span></span></td>
-                                        <td style="text-align:center;" onclick="showCellEditor(event,this,'D2','技术方案')" data-status="na" data-pct="0"><span class="dts-cell-display"><span class="status-cell na">-</span><span class="text-[12px] font-semibold text-hub-text-dim">0%</span></span></td>
+                                        <td style="text-align:center;border-right:1px solid var(--hub-border);" onclick="showCellEditor(event,this,'FI','技术方案')" data-status="ok" data-pct="60"><span class="dts-cell-display"><span class="status-cell ok">✓</span><span class="text-[12px] font-semibold text-[#34d399]">60%</span></span></td>
                                     </tr>
                                     <tr>
                                         <td style="white-space:nowrap;">
                                             <div class="proj-name">主断面</div>
                                         </td>
-                                        <td style="text-align:center;" onclick="showCellEditor(event,this,'FI','主断面')" data-status="ok" data-pct="70"><span class="dts-cell-display"><span class="status-cell ok">✓</span><span class="text-[12px] font-semibold text-[#34d399]">70%</span></span></td>
-                                        <td style="text-align:center;" onclick="showCellEditor(event,this,'NI','主断面')" data-status="warn" data-pct="45"><span class="dts-cell-display"><span class="status-cell warn">⚠</span><span class="text-[12px] font-semibold text-[#fbbf24]">45%</span></span></td>
-                                        <td style="text-align:center;" onclick="showCellEditor(event,this,'AI','主断面')" data-status="warn" data-pct="40"><span class="dts-cell-display"><span class="status-cell warn">⚠</span><span class="text-[12px] font-semibold text-[#fbbf24]">40%</span></span></td>
-                                        <td style="text-align:center;" onclick="showCellEditor(event,this,'C1','主断面')" data-status="na" data-pct="0"><span class="dts-cell-display"><span class="status-cell na">-</span><span class="text-[12px] font-semibold text-hub-text-dim">0%</span></span></td>
-                                        <td style="text-align:center;" onclick="showCellEditor(event,this,'D2','主断面')" data-status="na" data-pct="0"><span class="dts-cell-display"><span class="status-cell na">-</span><span class="text-[12px] font-semibold text-hub-text-dim">0%</span></span></td>
+                                        <td style="text-align:center;border-right:1px solid var(--hub-border);" onclick="showCellEditor(event,this,'FI','主断面')" data-status="ok" data-pct="70"><span class="dts-cell-display"><span class="status-cell ok">✓</span><span class="text-[12px] font-semibold text-[#34d399]">70%</span></span></td>
                                     </tr>
 
                                     <tr onclick="togglePerfSubRows()">
                                         <td style="white-space:nowrap;">
                                             <div class="proj-name flex items-center gap-1.5">性能指标 <span id="perfSubArrow" class="text-[10px] text-hub-text-dim transition-transform inline-block">▸</span></div>
                                         </td>
-                                        <td></td><td></td><td></td><td></td><td></td>
+                                        <td style="border-right:1px solid var(--hub-border);"></td>
                                     </tr>
                                     <tbody id="perfSubRows" style="display:none;">
                                         <tr style="background:rgba(79,140,255,0.04);">
                                             <td style="white-space:nowrap;padding-left:1.5rem;">
                                                 <div class="proj-name text-sm text-hub-text-secondary">├ 碰撞</div>
                                             </td>
-                                            <td style="text-align:center;" onclick="showCellEditor(event,this,'FI','碰撞')" data-status="ok" data-pct="85"><span class="dts-cell-display"><span class="status-cell ok">✓</span><span class="text-[12px] font-semibold text-[#34d399]">85%</span></span></td>
-                                            <td style="text-align:center;" onclick="showCellEditor(event,this,'NI','碰撞')" data-status="na" data-pct="0"><span class="dts-cell-display"><span class="status-cell na">-</span><span class="text-[12px] font-semibold text-hub-text-dim">0%</span></span></td>
-                                            <td style="text-align:center;" onclick="showCellEditor(event,this,'AI','碰撞')" data-status="warn" data-pct="50"><span class="dts-cell-display"><span class="status-cell warn">⚠</span><span class="text-[12px] font-semibold text-[#fbbf24]">50%</span></span></td>
-                                            <td style="text-align:center;" onclick="showCellEditor(event,this,'C1','碰撞')" data-status="na" data-pct="0"><span class="dts-cell-display"><span class="status-cell na">-</span><span class="text-[12px] font-semibold text-hub-text-dim">0%</span></span></td>
-                                            <td style="text-align:center;" onclick="showCellEditor(event,this,'D2','碰撞')" data-status="na" data-pct="0"><span class="dts-cell-display"><span class="status-cell na">-</span><span class="text-[12px] font-semibold text-hub-text-dim">0%</span></span></td>
+                                            <td style="text-align:center;border-right:1px solid var(--hub-border);" onclick="showCellEditor(event,this,'FI','碰撞')" data-status="ok" data-pct="85"><span class="dts-cell-display"><span class="status-cell ok">✓</span><span class="text-[12px] font-semibold text-[#34d399]">85%</span></span></td>
                                         </tr>
                                         <tr style="background:rgba(79,140,255,0.04);">
                                             <td style="white-space:nowrap;padding-left:1.5rem;">
                                                 <div class="proj-name text-sm text-hub-text-secondary">├ 扭转</div>
                                             </td>
-                                            <td style="text-align:center;" onclick="showCellEditor(event,this,'FI','扭转')" data-status="ok" data-pct="95"><span class="dts-cell-display"><span class="status-cell ok">✓</span><span class="text-[12px] font-semibold text-[#34d399]">95%</span></span></td>
-                                            <td style="text-align:center;" onclick="showCellEditor(event,this,'NI','扭转')" data-status="na" data-pct="0"><span class="dts-cell-display"><span class="status-cell na">-</span><span class="text-[12px] font-semibold text-hub-text-dim">0%</span></span></td>
-                                            <td style="text-align:center;" onclick="showCellEditor(event,this,'AI','扭转')" data-status="ok" data-pct="80"><span class="dts-cell-display"><span class="status-cell ok">✓</span><span class="text-[12px] font-semibold text-[#34d399]">80%</span></span></td>
-                                            <td style="text-align:center;" onclick="showCellEditor(event,this,'C1','扭转')" data-status="warn" data-pct="40"><span class="dts-cell-display"><span class="status-cell warn">⚠</span><span class="text-[12px] font-semibold text-[#fbbf24]">40%</span></span></td>
-                                            <td style="text-align:center;" onclick="showCellEditor(event,this,'D2','扭转')" data-status="na" data-pct="0"><span class="dts-cell-display"><span class="status-cell na">-</span><span class="text-[12px] font-semibold text-hub-text-dim">0%</span></span></td>
+                                            <td style="text-align:center;border-right:1px solid var(--hub-border);" onclick="showCellEditor(event,this,'FI','扭转')" data-status="ok" data-pct="95"><span class="dts-cell-display"><span class="status-cell ok">✓</span><span class="text-[12px] font-semibold text-[#34d399]">95%</span></span></td>
                                         </tr>
                                         <tr style="background:rgba(79,140,255,0.04);">
                                             <td style="white-space:nowrap;padding-left:1.5rem;">
                                                 <span id="customOptLabel" class="text-sm text-hub-text-dim cursor-pointer border border-dashed border-hub-border rounded px-2 py-0.5" onclick="event.stopPropagation();editCustomOptLabel(this)">+ 添加选项</span>
                                             </td>
-                                            <td style="text-align:center;" onclick="showCellEditor(event,this,'FI','新选项')" data-status="na" data-pct="0"><span class="dts-cell-display"><span class="status-cell na">-</span><span class="text-[12px] font-semibold text-hub-text-dim">0%</span></span></td>
-                                            <td style="text-align:center;" onclick="showCellEditor(event,this,'NI','新选项')" data-status="na" data-pct="0"><span class="dts-cell-display"><span class="status-cell na">-</span><span class="text-[12px] font-semibold text-hub-text-dim">0%</span></span></td>
-                                            <td style="text-align:center;" onclick="showCellEditor(event,this,'AI','新选项')" data-status="na" data-pct="0"><span class="dts-cell-display"><span class="status-cell na">-</span><span class="text-[12px] font-semibold text-hub-text-dim">0%</span></span></td>
-                                            <td style="text-align:center;" onclick="showCellEditor(event,this,'C1','新选项')" data-status="na" data-pct="0"><span class="dts-cell-display"><span class="status-cell na">-</span><span class="text-[12px] font-semibold text-hub-text-dim">0%</span></span></td>
-                                            <td style="text-align:center;" onclick="showCellEditor(event,this,'D2','新选项')" data-status="na" data-pct="0"><span class="dts-cell-display"><span class="status-cell na">-</span><span class="text-[12px] font-semibold text-hub-text-dim">0%</span></span></td>
+                                            <td style="text-align:center;border-right:1px solid var(--hub-border);" onclick="showCellEditor(event,this,'FI','新选项')" data-status="na" data-pct="0"><span class="dts-cell-display"><span class="status-cell na">-</span><span class="text-[12px] font-semibold text-hub-text-dim">0%</span></span></td>
                                         </tr>
                                     </tbody>
 
-                                    <tr><td colspan="6" style="height:1px;padding:0;border:none;background:var(--hub-border);"></td></tr>
+                                    <tr><td colspan="2" style="height:1px;padding:0;border:none;background:var(--hub-border);"></td></tr>
 
                                     <tr style="background:var(--hub-surface-elevated);">
                                         <td style="white-space:nowrap;">
                                             <div class="proj-name text-[11px] text-hub-text-dim font-semibold uppercase tracking-[0.5px]">质量评审</div>
                                         </td>
-                                        <td></td><td></td><td></td><td></td><td></td>
+                                        <td style="border-right:1px solid var(--hub-border);"></td>
                                     </tr>
                                     <tr><td style="white-space:nowrap;"><div class="proj-name">评审主题</div></td>
-                                        <td style="text-align:center;" onclick="showTextEditor(event,this,'FI','评审主题')" data-type="text"><span class="dts-cell-display text-[12px] text-hub-text-dim cursor-pointer" title="点击编辑">-</span></td>
-                                        <td style="text-align:center;" onclick="showTextEditor(event,this,'NI','评审主题')" data-type="text"><span class="dts-cell-display text-[12px] text-hub-text-dim cursor-pointer" title="点击编辑">-</span></td>
-                                        <td style="text-align:center;" onclick="showTextEditor(event,this,'AI','评审主题')" data-type="text"><span class="dts-cell-display text-[12px] text-hub-text-dim cursor-pointer" title="点击编辑">-</span></td>
-                                        <td style="text-align:center;" onclick="showTextEditor(event,this,'C1','评审主题')" data-type="text"><span class="dts-cell-display text-[12px] text-hub-text-dim cursor-pointer" title="点击编辑">-</span></td>
-                                        <td style="text-align:center;" onclick="showTextEditor(event,this,'D2','评审主题')" data-type="text"><span class="dts-cell-display text-[12px] text-hub-text-dim cursor-pointer" title="点击编辑">-</span></td>
+                                        <td style="text-align:center;border-right:1px solid var(--hub-border);" onclick="showTextEditor(event,this,'FI','评审主题')" data-type="text"><span class="dts-cell-display text-[12px] text-hub-text-dim cursor-pointer" title="点击编辑">-</span></td>
                                     </tr>
                                     <tr><td style="white-space:nowrap;"><div class="proj-name">评审内容</div></td>
-                                        <td style="text-align:center;" onclick="showTextEditor(event,this,'FI','评审内容')" data-type="text"><span class="dts-cell-display text-[12px] text-hub-text-dim cursor-pointer" title="点击编辑">-</span></td>
-                                        <td style="text-align:center;" onclick="showTextEditor(event,this,'NI','评审内容')" data-type="text"><span class="dts-cell-display text-[12px] text-hub-text-dim cursor-pointer" title="点击编辑">-</span></td>
-                                        <td style="text-align:center;" onclick="showTextEditor(event,this,'AI','评审内容')" data-type="text"><span class="dts-cell-display text-[12px] text-hub-text-dim cursor-pointer" title="点击编辑">-</span></td>
-                                        <td style="text-align:center;" onclick="showTextEditor(event,this,'C1','评审内容')" data-type="text"><span class="dts-cell-display text-[12px] text-hub-text-dim cursor-pointer" title="点击编辑">-</span></td>
-                                        <td style="text-align:center;" onclick="showTextEditor(event,this,'D2','评审内容')" data-type="text"><span class="dts-cell-display text-[12px] text-hub-text-dim cursor-pointer" title="点击编辑">-</span></td>
+                                        <td style="text-align:center;border-right:1px solid var(--hub-border);" onclick="showTextEditor(event,this,'FI','评审内容')" data-type="text"><span class="dts-cell-display text-[12px] text-hub-text-dim cursor-pointer" title="点击编辑">-</span></td>
                                     </tr>
                                     <tr><td style="white-space:nowrap;"><div class="proj-name">项目阶段</div></td>
-                                        <td style="text-align:center;" onclick="showSelectEditor(event,this,'FI','项目阶段',['造型阶段','方案阶段','工艺阶段','NC阶段'])" data-type="select"><span class="dts-cell-display text-[12px] text-hub-text-dim cursor-pointer" title="点击选择">-</span></td>
-                                        <td style="text-align:center;" onclick="showSelectEditor(event,this,'NI','项目阶段',['造型阶段','方案阶段','工艺阶段','NC阶段'])" data-type="select"><span class="dts-cell-display text-[12px] text-hub-text-dim cursor-pointer" title="点击选择">-</span></td>
-                                        <td style="text-align:center;" onclick="showSelectEditor(event,this,'AI','项目阶段',['造型阶段','方案阶段','工艺阶段','NC阶段'])" data-type="select"><span class="dts-cell-display text-[12px] text-hub-text-dim cursor-pointer" title="点击选择">-</span></td>
-                                        <td style="text-align:center;" onclick="showSelectEditor(event,this,'C1','项目阶段',['造型阶段','方案阶段','工艺阶段','NC阶段'])" data-type="select"><span class="dts-cell-display text-[12px] text-hub-text-dim cursor-pointer" title="点击选择">-</span></td>
-                                        <td style="text-align:center;" onclick="showSelectEditor(event,this,'D2','项目阶段',['造型阶段','方案阶段','工艺阶段','NC阶段'])" data-type="select"><span class="dts-cell-display text-[12px] text-hub-text-dim cursor-pointer" title="点击选择">-</span></td>
+                                        <td style="text-align:center;border-right:1px solid var(--hub-border);" onclick="showSelectEditor(event,this,'FI','项目阶段',['造型阶段','方案阶段','工艺阶段','NC阶段'])" data-type="select"><span class="dts-cell-display text-[12px] text-hub-text-dim cursor-pointer" title="点击选择">-</span></td>
                                     </tr>
                                     <tr><td style="white-space:nowrap;"><div class="proj-name">是否完成</div></td>
-                                        <td style="text-align:center;" onclick="showSelectEditor(event,this,'FI','是否完成',['未评审','已评审','部分评审'])" data-type="select"><span class="dts-cell-display text-[12px] text-hub-text-dim cursor-pointer" title="点击选择">-</span></td>
-                                        <td style="text-align:center;" onclick="showSelectEditor(event,this,'NI','是否完成',['未评审','已评审','部分评审'])" data-type="select"><span class="dts-cell-display text-[12px] text-hub-text-dim cursor-pointer" title="点击选择">-</span></td>
-                                        <td style="text-align:center;" onclick="showSelectEditor(event,this,'AI','是否完成',['未评审','已评审','部分评审'])" data-type="select"><span class="dts-cell-display text-[12px] text-hub-text-dim cursor-pointer" title="点击选择">-</span></td>
-                                        <td style="text-align:center;" onclick="showSelectEditor(event,this,'C1','是否完成',['未评审','已评审','部分评审'])" data-type="select"><span class="dts-cell-display text-[12px] text-hub-text-dim cursor-pointer" title="点击选择">-</span></td>
-                                        <td style="text-align:center;" onclick="showSelectEditor(event,this,'D2','是否完成',['未评审','已评审','部分评审'])" data-type="select"><span class="dts-cell-display text-[12px] text-hub-text-dim cursor-pointer" title="点击选择">-</span></td>
+                                        <td style="text-align:center;border-right:1px solid var(--hub-border);" onclick="showSelectEditor(event,this,'FI','是否完成',['未评审','已评审','部分评审'])" data-type="select"><span class="dts-cell-display text-[12px] text-hub-text-dim cursor-pointer" title="点击选择">-</span></td>
                                     </tr>
                                     <tr><td style="white-space:nowrap;"><div class="proj-name">交付</div></td>
-                                        <td style="text-align:center;" onclick="showPercentEditor(event,this,'FI','交付')" data-type="select"><span class="dts-cell-display text-[12px] font-semibold text-hub-text-dim cursor-pointer" title="点击选择">0%</span></td>
-                                        <td style="text-align:center;" onclick="showPercentEditor(event,this,'NI','交付')" data-type="select"><span class="dts-cell-display text-[12px] font-semibold text-hub-text-dim cursor-pointer" title="点击选择">0%</span></td>
-                                        <td style="text-align:center;" onclick="showPercentEditor(event,this,'AI','交付')" data-type="select"><span class="dts-cell-display text-[12px] font-semibold text-hub-text-dim cursor-pointer" title="点击选择">0%</span></td>
-                                        <td style="text-align:center;" onclick="showPercentEditor(event,this,'C1','交付')" data-type="select"><span class="dts-cell-display text-[12px] font-semibold text-hub-text-dim cursor-pointer" title="点击选择">0%</span></td>
-                                        <td style="text-align:center;" onclick="showPercentEditor(event,this,'D2','交付')" data-type="select"><span class="dts-cell-display text-[12px] font-semibold text-hub-text-dim cursor-pointer" title="点击选择">0%</span></td>
+                                        <td style="text-align:center;border-right:1px solid var(--hub-border);" onclick="showPercentEditor(event,this,'FI','交付')" data-type="select"><span class="dts-cell-display text-[12px] font-semibold text-hub-text-dim cursor-pointer" title="点击选择">0%</span></td>
                                     </tr>
                                 </tbody>
                             </table>
