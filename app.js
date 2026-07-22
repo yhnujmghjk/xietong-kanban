@@ -463,6 +463,10 @@ function addProjectColumnToTable(name, status) {
             return;
         }
 
+        if (row.querySelector('#customOptLabel')) {
+            return;
+        }
+
         var newTd = document.createElement('td');
         // 从该行已有单元格复制边框样式，确保分割线一致
         var refCell = cells[cells.length - 1];
