@@ -100,35 +100,39 @@ function collectState() {
 function applyState(state) {
     if (!state) return;
     isRemoteUpdate = true;
+    try {
+        if (state.personnel) {
+            var personnelBody = document.getElementById('personnelBody');
+            if (personnelBody) personnelBody.innerHTML = state.personnel;
+        }
+        if (state.matrixHead) {
+            var matrixHead = document.getElementById('matrixHead');
+            if (matrixHead) matrixHead.innerHTML = state.matrixHead;
+        }
+        if (state.matrixBody) {
+            var matrixBody = document.getElementById('matrixBody');
+            if (matrixBody) matrixBody.innerHTML = state.matrixBody;
+        }
+        if (state.subAssemblyDisplay !== undefined) {
+            var subAssembly = document.getElementById('subAssemblyRows');
+            if (subAssembly) subAssembly.style.display = state.subAssemblyDisplay;
+            var arrow = document.getElementById('subAssemblyArrow');
+            if (arrow) arrow.style.transform = state.subAssemblyDisplay === 'none' ? 'rotate(0deg)' : 'rotate(90deg)';
+        }
+        if (state.perfSubDisplay !== undefined) {
+            var perfSub = document.getElementById('perfSubRows');
+            if (perfSub) perfSub.style.display = state.perfSubDisplay;
+            var perfArrow = document.getElementById('perfSubArrow');
+            if (perfArrow) perfArrow.style.transform = state.perfSubDisplay === 'none' ? 'rotate(0deg)' : 'rotate(90deg)';
+        }
 
-    if (state.personnel) {
-        var personnelBody = document.getElementById('personnelBody');
-        if (personnelBody) personnelBody.innerHTML = state.personnel;
+        updateDashboardKPIs();
+        updateStatsPage();
+    } catch (e) {
+        console.error('applyState 错误:', e);
+    } finally {
+        isRemoteUpdate = false;
     }
-    if (state.matrixHead) {
-        var matrixHead = document.getElementById('matrixHead');
-        if (matrixHead) matrixHead.innerHTML = state.matrixHead;
-    }
-    if (state.matrixBody) {
-        var matrixBody = document.getElementById('matrixBody');
-        if (matrixBody) matrixBody.innerHTML = state.matrixBody;
-    }
-    if (state.subAssemblyDisplay !== undefined) {
-        var subAssembly = document.getElementById('subAssemblyRows');
-        if (subAssembly) subAssembly.style.display = state.subAssemblyDisplay;
-        var arrow = document.getElementById('subAssemblyArrow');
-        if (arrow) arrow.style.transform = state.subAssemblyDisplay === 'none' ? 'rotate(0deg)' : 'rotate(90deg)';
-    }
-    if (state.perfSubDisplay !== undefined) {
-        var perfSub = document.getElementById('perfSubRows');
-        if (perfSub) perfSub.style.display = state.perfSubDisplay;
-        var perfArrow = document.getElementById('perfSubArrow');
-        if (perfArrow) perfArrow.style.transform = state.perfSubDisplay === 'none' ? 'rotate(0deg)' : 'rotate(90deg)';
-    }
-
-    updateDashboardKPIs();
-    updateStatsPage();
-    isRemoteUpdate = false;
 }
 
 function syncToSupabase() {
