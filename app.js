@@ -1,6 +1,6 @@
-// === Supabase 配置（替换为你自己的） ===
-var SUPABASE_URL = 'YOUR_SUPABASE_URL';
-var SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+// === Supabase 配置 ===
+var SUPABASE_URL = 'https://ptdyuishochwbputdxqj.supabase.co';
+var SUPABASE_ANON_KEY = 'sb_publishable_FRskLxx0NthC3LeF8d-WUw_2aOOhDBC';
 var sb = null;
 var isRemoteUpdate = false;
 var syncTimer = null;
