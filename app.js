@@ -1,6 +1,6 @@
 // === Supabase 配置 ===
 var SUPABASE_URL = 'https://ptdyuishochwbputdxqj.supabase.co';
-var SUPABASE_ANON_KEY = 'sb_publishable_FRskLxx0NthC3LeF8d-WUw_2aOOhDBC';
+var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB0ZHl1aXNob2Nod2JwdXRkeHFqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ2NTMwNTMsImV4cCI6MjEwMDIyOTA1M30.ZnMQ1qLJc0CuMVS_Iv_kzIpMSU7lsVgKtSfRFW-iPj4';
 var sb = null;
 var isRemoteUpdate = false;
 var syncTimer = null;
