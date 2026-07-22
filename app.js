@@ -40,7 +40,8 @@ function initSupabase() {
     sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     updateSyncStatus('connecting', '正在连接 Supabase...');
     setupRealtime();
-    loadFromSupabase();
+    syncToSupabase();
+    setTimeout(loadFromSupabase, 1000);
 }
 
 function updateSyncStatus(status, message) {
