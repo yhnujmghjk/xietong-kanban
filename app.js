@@ -1,11 +1,36 @@
-// === Supabase 配置 ===
+// ============================================================
+// 协同看板 - 主应用逻辑
+// 按功能模块组织，依赖顺序自上而下
+// ============================================================
+
+// === 1. 全局变量与配置 ===
 var SUPABASE_URL = 'https://ptdyuishochwbputdxqj.supabase.co';
 var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB0ZHl1aXNob2Nod2JwdXRkeHFqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ2NTMwNTMsImV4cCI6MjEwMDIyOTA1M30.ZnMQ1qLJc0CuMVS_Iv_kzIpMSU7lsVgKtSfRFW-iPj4';
 var sb = null;
 var isRemoteUpdate = false;
 var syncTimer = null;
+var activePopup = null;
+var activeCell = null;
+var activeSelectCell = null;
 
-// === 初始化 ===
+// === 2. 工具函数 ===
+function closeAllModals() {
+    document.getElementById('modalOverlay').style.display = 'none';
+    document.querySelectorAll('.modal').forEach(function(m) { m.style.display = 'none'; });
+}
+
+function closeModal(modalId) {
+    document.getElementById('modalOverlay').style.display = 'none';
+    document.getElementById(modalId).style.display = 'none';
+}
+
+function closeCellEditor() {
+    if (activePopup) { activePopup.remove(); activePopup = null; }
+    activeCell = null;
+    activeSelectCell = null;
+}
+
+// === 3. Supabase 初始化与同步 ===
 function initSupabase() {
     if (SUPABASE_URL === 'YOUR_SUPABASE_URL' || !window.supabase) {
         console.log('Supabase 未配置，运行在本地模式');
@@ -52,7 +77,6 @@ function setupRealtime() {
         });
 }
 
-// === 数据同步 ===
 function collectState() {
     var state = {};
     var personnelBody = document.getElementById('personnelBody');
@@ -123,7 +147,6 @@ async function loadFromSupabase() {
     var { data, error } = await sb.from('app_state').select('data').eq('id', 1).single();
     if (error) {
         if (error.code === 'PGRST116') {
-            // 首次使用，上传当前 HTML 状态作为初始数据
             syncToSupabase();
         } else {
             console.error('加载数据失败:', error);
@@ -135,14 +158,36 @@ async function loadFromSupabase() {
     }
 }
 
-// === 启动 ===
-document.addEventListener('DOMContentLoaded', function() {
-    lucide.createIcons();
-    updateDashboardKPIs();
-    initSupabase();
-});
+// === 4. 页面切换 ===
+function switchPage(pageId) {
+    document.querySelectorAll('.page-content').forEach(function(el) {
+        el.classList.add('hidden');
+    });
+    document.getElementById('page-' + pageId).classList.remove('hidden');
 
-// === KPI 更新 ===
+    document.querySelectorAll('.nav-item').forEach(function(el) {
+        el.classList.remove('active');
+    });
+    document.querySelectorAll('[data-page="' + pageId + '"]').forEach(function(el) {
+        el.classList.add('active');
+    });
+
+    toggleMobileMenu();
+}
+
+function toggleMobileMenu() {
+    var nav = document.getElementById('mobileNav');
+    var overlay = document.getElementById('mobileNavOverlay');
+    if (nav.classList.contains('open')) {
+        nav.classList.remove('open');
+        overlay.style.display = 'none';
+    } else {
+        nav.classList.add('open');
+        overlay.style.display = 'block';
+    }
+}
+
+// === 5. KPI 更新 ===
 function updateDashboardKPIs() {
     var projThs = document.querySelectorAll('#matrixHead tr th');
     var projectCount = Math.max(0, projThs.length - 2);
@@ -188,40 +233,44 @@ function updateDashboardKPIs() {
     if (kpiAnomalyCount) kpiAnomalyCount.textContent = errCount + ' 项异常';
 }
 
-// === 页面切换 ===
-function switchPage(pageId) {
-    document.querySelectorAll('.page-content').forEach(function(el) {
-        el.classList.add('hidden');
-    });
-    document.getElementById('page-' + pageId).classList.remove('hidden');
+// === 6. 统计页面 ===
+function updateStatsPage() {
+    var rows = document.querySelectorAll('#personnelBody tr');
+    var total = rows.length;
 
-    document.querySelectorAll('.nav-item').forEach(function(el) {
-        el.classList.remove('active');
-    });
-    document.querySelectorAll('[data-page="' + pageId + '"]').forEach(function(el) {
-        el.classList.add('active');
+    var deptCounts = { '上车体': 0, '下车体': 0, '开闭件': 0 };
+    var laborCounts = { '自有': 0, '外协': 0 };
+    var levelCounts = { '方案负责人': 0, '总成负责人': 0, '工程师': 0, '建模员': 0 };
+
+    rows.forEach(function(row) {
+        deptCounts[row.dataset.dept] = (deptCounts[row.dataset.dept] || 0) + 1;
+        laborCounts[row.dataset.labor] = (laborCounts[row.dataset.labor] || 0) + 1;
+        levelCounts[row.dataset.level] = (levelCounts[row.dataset.level] || 0) + 1;
     });
 
-    toggleMobileMenu();
+    var deptTotal = document.getElementById('deptTotal');
+    if (deptTotal) deptTotal.textContent = total;
+
+    var depts = ['上车体', '下车体', '开闭件'];
+    depts.forEach(function(dept, i) {
+        var count = deptCounts[dept] || 0;
+        var pct = total > 0 ? (count / total * 100).toFixed(1) : '0.0';
+        var el = document.getElementById('deptCount' + (i + 1));
+        if (el) el.textContent = count + ' (' + pct + '%)';
+    });
+
+    var laborTotal = document.getElementById('laborTotal');
+    if (laborTotal) laborTotal.textContent = total;
+
+    var labors = ['自有', '外协'];
+    labors.forEach(function(labor, i) {
+        var count = laborCounts[labor] || 0;
+        var pct = total > 0 ? (count / total * 100).toFixed(1) : '0.0';
+        var el = document.getElementById('laborCount' + (i + 1));
+        if (el) el.textContent = count + ' (' + pct + '%)';
+    });
 }
-
-function toggleMobileMenu() {
-    var nav = document.getElementById('mobileNav');
-    var overlay = document.getElementById('mobileNavOverlay');
-    if (nav.classList.contains('open')) {
-        nav.classList.remove('open');
-        overlay.style.display = 'none';
-    } else {
-        nav.classList.add('open');
-        overlay.style.display = 'block';
-    }
-}
-
-// === 矩阵单元格编辑器 ===
-var activePopup = null;
-var activeCell = null;
-var activeSelectCell = null;
-
+// === 7. 矩阵单元格编辑器 ===
 function showCellEditor(e, td, proj, ms) {
     e.stopPropagation();
     if (activePopup) { activePopup.remove(); activePopup = null; }
@@ -263,19 +312,147 @@ function saveCellEditor() {
     syncToSupabase();
 }
 
-function closeCellEditor() {
+// === 8. 文本编辑器 ===
+function showTextEditor(e, td, proj, ms) {
+    e.stopPropagation();
     if (activePopup) { activePopup.remove(); activePopup = null; }
-    activeCell = null;
-    activeSelectCell = null;
+    activeCell = td;
+    var currentVal = td.querySelector('.dts-cell-display').textContent.trim();
+    if (currentVal === '-') currentVal = '';
+    var rect = td.getBoundingClientRect();
+    var popup = document.createElement('div');
+    popup.className = 'dts-popup';
+    popup.innerHTML = '<div class="popup-row"><label>' + ms + '</label><input type="text" id="teValue" value="' + currentVal + '" placeholder="输入内容..."></div><div class="popup-actions"><button class="popup-btn popup-btn-cancel" onclick="closeCellEditor()">取消</button><button class="popup-btn popup-btn-primary" onclick="saveTextEditor()">确定</button></div>';
+    document.body.appendChild(popup);
+    activePopup = popup;
+
+    var popupRect = popup.getBoundingClientRect();
+    var left = rect.left + rect.width / 2 - popupRect.width / 2;
+    var top = rect.bottom + 6;
+    if (top + popupRect.height > window.innerHeight) top = rect.top - popupRect.height - 6;
+    if (left < 0) left = 10;
+    if (left + popupRect.width > window.innerWidth) left = window.innerWidth - popupRect.width - 10;
+    popup.style.left = left + 'px';
+    popup.style.top = top + 'px';
+    document.getElementById('teValue').focus();
 }
 
-document.addEventListener('click', function(e) {
-    if (activePopup && !activePopup.contains(e.target)) {
-        closeCellEditor();
+function saveTextEditor() {
+    if (!activeCell || !activePopup) return;
+    var val = document.getElementById('teValue').value.trim();
+    var display = activeCell.querySelector('.dts-cell-display');
+    if (val) {
+        display.textContent = val;
+        display.className = 'dts-cell-display text-[12px] text-hub-foreground cursor-pointer';
+    } else {
+        display.textContent = '-';
+        display.className = 'dts-cell-display text-[12px] text-hub-text-dim cursor-pointer';
     }
-});
+    closeCellEditor();
+    syncToSupabase();
+}
 
-// === 角色名编辑 ===
+// === 9. 下拉选择编辑器 ===
+function showSelectEditor(e, td, proj, ms, options) {
+    e.stopPropagation();
+    if (activePopup) { activePopup.remove(); activePopup = null; }
+    activeSelectCell = td;
+    var currentVal = td.querySelector('.dts-cell-display').textContent.trim();
+    if (currentVal === '-') currentVal = '';
+    var rect = td.getBoundingClientRect();
+    var popup = document.createElement('div');
+    popup.className = 'dts-popup';
+    var optionsHtml = '<div class="popup-row"><label>' + ms + '</label><select id="seValue">';
+    optionsHtml += '<option value="">-</option>';
+    options.forEach(function(opt) {
+        optionsHtml += '<option value="' + opt + '"' + (currentVal === opt ? ' selected' : '') + '>' + opt + '</option>';
+    });
+    optionsHtml += '</select></div>';
+    popup.innerHTML = optionsHtml + '<div class="popup-actions"><button class="popup-btn popup-btn-cancel" onclick="closeCellEditor()">取消</button><button class="popup-btn popup-btn-primary" onclick="saveSelectEditor()">确定</button></div>';
+    document.body.appendChild(popup);
+    activePopup = popup;
+
+    var popupRect = popup.getBoundingClientRect();
+    var left = rect.left + rect.width / 2 - popupRect.width / 2;
+    var top = rect.bottom + 6;
+    if (top + popupRect.height > window.innerHeight) top = rect.top - popupRect.height - 6;
+    if (left < 0) left = 10;
+    if (left + popupRect.width > window.innerWidth) left = window.innerWidth - popupRect.width - 10;
+    popup.style.left = left + 'px';
+    popup.style.top = top + 'px';
+}
+
+function saveSelectEditor() {
+    if (!activeSelectCell || !activePopup) return;
+    var val = document.getElementById('seValue').value;
+    var display = activeSelectCell.querySelector('.dts-cell-display');
+    if (val) {
+        display.textContent = val;
+        var colorClass = 'text-hub-foreground';
+        if (val === '已评审') colorClass = 'text-[#34d399]';
+        else if (val === '部分评审') colorClass = 'text-[#fbbf24]';
+        else if (val === '未评审') colorClass = 'text-[#f87171]';
+        else if (val === 'NC阶段') colorClass = 'text-[#a78bfa]';
+        else if (val === '工艺阶段') colorClass = 'text-[#4f8cff]';
+        else if (val === '方案阶段') colorClass = 'text-[#34d399]';
+        else if (val === '造型阶段') colorClass = 'text-[#fbbf24]';
+        display.className = 'dts-cell-display text-[12px] font-semibold ' + colorClass + ' cursor-pointer';
+    } else {
+        display.textContent = '-';
+        display.className = 'dts-cell-display text-[12px] text-hub-text-dim cursor-pointer';
+    }
+    closeCellEditor();
+    activeSelectCell = null;
+    syncToSupabase();
+}
+
+// === 10. 百分比编辑器 ===
+function showPercentEditor(e, td, proj, ms) {
+    e.stopPropagation();
+    if (activePopup) { activePopup.remove(); activePopup = null; }
+    activeSelectCell = td;
+    var currentVal = td.querySelector('.dts-cell-display').textContent.trim().replace('%', '');
+    if (currentVal === '-' || currentVal === '') currentVal = '0';
+    var rect = td.getBoundingClientRect();
+    var popup = document.createElement('div');
+    popup.className = 'dts-popup';
+    var options = ['0', '10', '20', '30', '40', '50', '60', '70', '80', '90', '100'];
+    var optionsHtml = '<div class="popup-row"><label>' + ms + '</label><select id="seValue">';
+    options.forEach(function(opt) {
+        optionsHtml += '<option value="' + opt + '"' + (currentVal === opt ? ' selected' : '') + '>' + opt + '%</option>';
+    });
+    optionsHtml += '</select></div>';
+    popup.innerHTML = optionsHtml + '<div class="popup-actions"><button class="popup-btn popup-btn-cancel" onclick="closeCellEditor()">取消</button><button class="popup-btn popup-btn-primary" onclick="savePercentEditor()">确定</button></div>';
+    document.body.appendChild(popup);
+    activePopup = popup;
+
+    var popupRect = popup.getBoundingClientRect();
+    var left = rect.left + rect.width / 2 - popupRect.width / 2;
+    var top = rect.bottom + 6;
+    if (top + popupRect.height > window.innerHeight) top = rect.top - popupRect.height - 6;
+    if (left < 0) left = 10;
+    if (left + popupRect.width > window.innerWidth) left = window.innerWidth - popupRect.width - 10;
+    popup.style.left = left + 'px';
+    popup.style.top = top + 'px';
+}
+
+function savePercentEditor() {
+    if (!activeSelectCell || !activePopup) return;
+    var val = document.getElementById('seValue').value;
+    var display = activeSelectCell.querySelector('.dts-cell-display');
+    var colorClass = 'text-hub-text-dim';
+    var pct = parseInt(val);
+    if (pct >= 100) colorClass = 'text-[#34d399]';
+    else if (pct >= 70) colorClass = 'text-[#4f8cff]';
+    else if (pct >= 40) colorClass = 'text-[#fbbf24]';
+    else if (pct > 0) colorClass = 'text-[#f87171]';
+    display.textContent = val + '%';
+    display.className = 'dts-cell-display text-[12px] font-semibold ' + colorClass + ' cursor-pointer';
+    closeCellEditor();
+    activeSelectCell = null;
+    syncToSupabase();
+}
+// === 11. 角色名编辑器 ===
 function editRoleName(span) {
     var currentText = span.textContent === '-' ? '' : span.textContent;
     var input = document.createElement('input');
@@ -303,7 +480,151 @@ function editRoleName(span) {
     });
 }
 
-// === 自定义选项行 ===
+// === 12. 矩阵操作（新增/删除项目列） ===
+function deleteProjectColumn(btn) {
+    var th = btn.closest('th');
+    var thIndex = Array.from(th.parentNode.children).indexOf(th);
+    if (thIndex < 1) return;
+
+    th.remove();
+    var table = document.querySelector('.matrix-table');
+    table.querySelectorAll('tbody tr, tbody tbody tr').forEach(function(row) {
+        var cells = row.querySelectorAll('td');
+        var firstTd = cells[0];
+        if (firstTd && firstTd.hasAttribute('colspan') && cells.length === 1) {
+            firstTd.colSpan = parseInt(firstTd.colSpan) - 1;
+            return;
+        }
+        if (cells.length > thIndex) cells[thIndex].remove();
+    });
+    updateDashboardKPIs();
+    syncToSupabase();
+}
+
+function showAddProjectColumnModal() {
+    var name = prompt('输入项目名称');
+    if (!name || !name.trim()) return;
+    name = name.trim();
+    addProjectColumnToTable(name, '规划中');
+    updateDashboardKPIs();
+    syncToSupabase();
+}
+
+function addProjectColumnToTable(name, status) {
+    var plusTh = document.querySelector('#matrixHead tr th:last-child');
+    var newTh = document.createElement('th');
+    newTh.style.cssText = 'text-align:center;min-width:64px;position:relative;border-right:1px solid var(--hub-border);';
+    var statusColor = status === '进行中' ? 'var(--state-success)' : status === '暂停' ? 'var(--state-warning)' : 'var(--hub-text-dim)';
+    newTh.innerHTML = name +
+        '<button class="col-del-btn" title="删除项目 ' + name + '" onclick="deleteProjectColumn(this)">&times;</button>' +
+        '<select class="proj-status-select" data-status="' + status + '" onchange="updateProjStatus(this)" style="color:' + statusColor + ';"><option' + (status === '进行中' ? ' selected' : '') + '>进行中</option><option' + (status === '暂停' ? ' selected' : '') + '>暂停</option><option' + (status === '规划中' ? ' selected' : '') + '>规划中</option></select>';
+    plusTh.parentNode.insertBefore(newTh, plusTh);
+
+    var table = document.querySelector('.matrix-table');
+    table.querySelectorAll('tbody tr, tbody tbody tr').forEach(function(row) {
+        var cells = row.querySelectorAll('td');
+        if (cells.length === 0) return;
+
+        var firstTd = cells[0];
+        if (firstTd && firstTd.hasAttribute('colspan') && cells.length === 1) {
+            firstTd.colSpan = parseInt(firstTd.colSpan) + 1;
+            return;
+        }
+
+        if (row.querySelector('#customOptLabel')) {
+            var optTd = document.createElement('td');
+            optTd.style.cssText = 'text-align:center;';
+            var optRefCell = cells[cells.length - 1];
+            if (optRefCell && optRefCell.style.borderBottom) optTd.style.borderBottom = optRefCell.style.borderBottom;
+            if (optRefCell && optRefCell.style.borderRight) optTd.style.borderRight = optRefCell.style.borderRight;
+            row.appendChild(optTd);
+            return;
+        }
+
+        var newTd = document.createElement('td');
+        var refCell = cells[cells.length - 1];
+        var refStyle = refCell ? refCell.style : {};
+        var cellCss = 'text-align:center;';
+        if (refStyle.borderBottom) cellCss += 'border-bottom:' + refStyle.borderBottom + ';';
+        if (refStyle.borderRight) cellCss += 'border-right:' + refStyle.borderRight + ';';
+        if (refStyle.borderTop) cellCss += 'border-top:' + refStyle.borderTop + ';';
+        newTd.style.cssText = cellCss;
+
+        var rowNameEl = row.querySelector('.proj-name');
+        var rowName = rowNameEl ? rowNameEl.textContent.trim().replace(/^[├└]\s*/, '').replace(/ ▸.*/, '') : '';
+
+        var lastCell = cells[cells.length - 1];
+        if (lastCell && lastCell.dataset && lastCell.dataset.type === 'text') {
+            newTd.dataset.type = 'text';
+            newTd.setAttribute('onclick', 'showTextEditor(event,this,\'' + name + '\',\'' + rowName + '\')');
+            newTd.innerHTML = '<span class="dts-cell-display text-[12px] text-hub-text-dim cursor-pointer" title="点击编辑">-</span>';
+        } else if (rowName === '交付') {
+            newTd.dataset.type = 'select';
+            newTd.setAttribute('onclick', 'showPercentEditor(event,this,\'' + name + '\',\'' + rowName + '\')');
+            newTd.innerHTML = '<span class="dts-cell-display text-[12px] font-semibold text-hub-text-dim cursor-pointer" title="点击选择">0%</span>';
+        } else if (lastCell && lastCell.dataset && lastCell.dataset.type === 'select') {
+            var selectOptions = [];
+            if (rowName === '项目阶段') selectOptions = ['造型阶段', '方案阶段', '工艺阶段', 'NC阶段'];
+            else if (rowName === '是否完成') selectOptions = ['未评审', '已评审', '部分评审'];
+            else selectOptions = ['选项1', '选项2', '选项3'];
+            newTd.dataset.type = 'select';
+            newTd.setAttribute('onclick', 'showSelectEditor(event,this,\'' + name + '\',\'' + rowName + '\',' + JSON.stringify(selectOptions) + ')');
+            newTd.innerHTML = '<span class="dts-cell-display text-[12px] text-hub-text-dim cursor-pointer" title="点击选择">-</span>';
+        } else if (lastCell && lastCell.querySelector('.dts-cell-display')) {
+            var hasStatus = lastCell.querySelector('.status-cell');
+            if (hasStatus) {
+                newTd.setAttribute('onclick', 'showCellEditor(event,this,\'' + name + '\',\'' + rowName + '\')');
+                newTd.dataset.status = 'na';
+                newTd.dataset.pct = '0';
+                newTd.dataset.note = '';
+                newTd.innerHTML = '<span class="dts-cell-display" style="display:flex;flex-direction:column;align-items:center;gap:1px;cursor:pointer;"><span class="status-cell na">-</span><span style="font-size:12px;font-weight:600;color:var(--hub-text-dim);">0%</span></span>';
+            } else {
+                newTd.innerHTML = '<span class="dts-cell-display text-[12px] text-hub-text-dim cursor-pointer" title="点击编辑">-</span>';
+            }
+        } else if (lastCell && lastCell.querySelector('.role-name-cell')) {
+            newTd.innerHTML = '<span class="role-name-cell" onclick="editRoleName(this)" style="font-size:12px;color:var(--hub-text-secondary);cursor:pointer;border-bottom:1px dashed transparent;padding-bottom:1px;" title="点击编辑">-</span>';
+        } else {
+            newTd.innerHTML = '<span class="dts-cell-display text-[12px] text-hub-text-dim cursor-pointer" title="点击编辑">-</span>';
+        }
+        row.appendChild(newTd);
+    });
+}
+
+function updateProjStatus(select) {
+    select.dataset.status = select.value;
+    select.style.color = select.value === '进行中' ? 'var(--state-success)' : select.value === '暂停' ? 'var(--state-warning)' : 'var(--hub-text-dim)';
+    updateDashboardKPIs();
+    syncToSupabase();
+}
+
+// === 13. 折叠行 ===
+function togglePerfSubRows() {
+    var rows = document.getElementById('perfSubRows');
+    var arrow = document.getElementById('perfSubArrow');
+    if (rows.style.display === 'none') {
+        rows.style.display = '';
+        arrow.style.transform = 'rotate(90deg)';
+    } else {
+        rows.style.display = 'none';
+        arrow.style.transform = 'rotate(0deg)';
+    }
+    syncToSupabase();
+}
+
+function toggleSubAssembly() {
+    var rows = document.getElementById('subAssemblyRows');
+    var arrow = document.getElementById('subAssemblyArrow');
+    if (rows.style.display === 'none') {
+        rows.style.display = '';
+        arrow.style.transform = 'rotate(90deg)';
+    } else {
+        rows.style.display = 'none';
+        arrow.style.transform = 'rotate(0deg)';
+    }
+    syncToSupabase();
+}
+
+// === 14. 自定义选项行 ===
 function editCustomOptLabel(span) {
     var currentText = span.textContent.replace(/^\+\s*/, '');
     if (currentText === '添加选项') currentText = '';
@@ -375,180 +696,11 @@ function deleteCustomOptRow(row) {
     row.remove();
     syncToSupabase();
 }
-
-// === 折叠行 ===
-function togglePerfSubRows() {
-    var rows = document.getElementById('perfSubRows');
-    var arrow = document.getElementById('perfSubArrow');
-    if (rows.style.display === 'none') {
-        rows.style.display = '';
-        arrow.style.transform = 'rotate(90deg)';
-    } else {
-        rows.style.display = 'none';
-        arrow.style.transform = 'rotate(0deg)';
-    }
-    syncToSupabase();
-}
-
-function toggleSubAssembly() {
-    var rows = document.getElementById('subAssemblyRows');
-    var arrow = document.getElementById('subAssemblyArrow');
-    if (rows.style.display === 'none') {
-        rows.style.display = '';
-        arrow.style.transform = 'rotate(90deg)';
-    } else {
-        rows.style.display = 'none';
-        arrow.style.transform = 'rotate(0deg)';
-    }
-    syncToSupabase();
-}
-
-// === 项目状态更新 ===
-function updateProjStatus(select) {
-    select.dataset.status = select.value;
-    select.style.color = select.value === '进行中' ? 'var(--state-success)' : select.value === '暂停' ? 'var(--state-warning)' : 'var(--hub-text-dim)';
-    updateDashboardKPIs();
-    syncToSupabase();
-}
-
-// === 删除项目列 ===
-function deleteProjectColumn(btn) {
-    var th = btn.closest('th');
-    var thIndex = Array.from(th.parentNode.children).indexOf(th);
-    if (thIndex < 1) return;
-
-    th.remove();
-    var table = document.querySelector('.matrix-table');
-    table.querySelectorAll('tbody tr, tbody tbody tr').forEach(function(row) {
-        var cells = row.querySelectorAll('td');
-        var firstTd = cells[0];
-        if (firstTd && firstTd.hasAttribute('colspan') && cells.length === 1) {
-            firstTd.colSpan = parseInt(firstTd.colSpan) - 1;
-            return;
-        }
-        if (cells.length > thIndex) cells[thIndex].remove();
-    });
-    updateDashboardKPIs();
-    syncToSupabase();
-}
-
-// === 新增项目列（表头+按钮） ===
-function showAddProjectColumnModal() {
-    var name = prompt('输入项目名称');
-    if (!name || !name.trim()) return;
-    name = name.trim();
-    addProjectColumnToTable(name, '规划中');
-    updateDashboardKPIs();
-    syncToSupabase();
-}
-
-function addProjectColumnToTable(name, status) {
-    var plusTh = document.querySelector('#matrixHead tr th:last-child');
-    var newTh = document.createElement('th');
-    newTh.style.cssText = 'text-align:left;min-width:64px;position:relative;border-right:1px solid var(--hub-border);';
-    var statusColor = status === '进行中' ? 'var(--state-success)' : status === '暂停' ? 'var(--state-warning)' : 'var(--hub-text-dim)';
-    newTh.innerHTML = name +
-        '<button class="col-del-btn" title="删除项目 ' + name + '" onclick="deleteProjectColumn(this)">&times;</button>' +
-        '<select class="proj-status-select" data-status="' + status + '" onchange="updateProjStatus(this)" style="color:' + statusColor + ';"><option' + (status === '进行中' ? ' selected' : '') + '>进行中</option><option' + (status === '暂停' ? ' selected' : '') + '>暂停</option><option' + (status === '规划中' ? ' selected' : '') + '>规划中</option></select>';
-    plusTh.parentNode.insertBefore(newTh, plusTh);
-
-    var table = document.querySelector('.matrix-table');
-    table.querySelectorAll('tbody tr, tbody tbody tr').forEach(function(row) {
-        var cells = row.querySelectorAll('td');
-        if (cells.length === 0) return;
-
-        var firstTd = cells[0];
-        if (firstTd && firstTd.hasAttribute('colspan') && cells.length === 1) {
-            firstTd.colSpan = parseInt(firstTd.colSpan) + 1;
-            return;
-        }
-
-        if (row.querySelector('#customOptLabel')) {
-            var optTd = document.createElement('td');
-            optTd.style.cssText = 'text-align:left;';
-            var optRefCell = cells[cells.length - 1];
-            if (optRefCell && optRefCell.style.borderBottom) optTd.style.borderBottom = optRefCell.style.borderBottom;
-            if (optRefCell && optRefCell.style.borderRight) optTd.style.borderRight = optRefCell.style.borderRight;
-            row.appendChild(optTd);
-            return;
-        }
-
-        var newTd = document.createElement('td');
-        // 从该行已有单元格复制边框样式，确保分割线一致
-        var refCell = cells[cells.length - 1];
-        var refStyle = refCell ? refCell.style : {};
-        var cellCss = 'text-align:left;';
-        if (refStyle.borderBottom) cellCss += 'border-bottom:' + refStyle.borderBottom + ';';
-        if (refStyle.borderRight) cellCss += 'border-right:' + refStyle.borderRight + ';';
-        if (refStyle.borderTop) cellCss += 'border-top:' + refStyle.borderTop + ';';
-        newTd.style.cssText = cellCss;
-
-        var rowNameEl = row.querySelector('.proj-name');
-        var rowName = rowNameEl ? rowNameEl.textContent.trim().replace(/^[├└]\s*/, '').replace(/ ▸.*/, '') : '';
-
-        var lastCell = cells[cells.length - 1];
-        if (lastCell && lastCell.dataset && lastCell.dataset.type === 'text') {
-            newTd.dataset.type = 'text';
-            newTd.setAttribute('onclick', 'showTextEditor(event,this,\'' + name + '\',\'' + rowName + '\')');
-            newTd.innerHTML = '<span class="dts-cell-display text-[12px] text-hub-text-dim cursor-pointer" title="点击编辑">-</span>';
-        } else if (rowName === '交付') {
-            newTd.dataset.type = 'select';
-            newTd.setAttribute('onclick', 'showPercentEditor(event,this,\'' + name + '\',\'' + rowName + '\')');
-            newTd.innerHTML = '<span class="dts-cell-display text-[12px] font-semibold text-hub-text-dim cursor-pointer" title="点击选择">0%</span>';
-        } else if (lastCell && lastCell.dataset && lastCell.dataset.type === 'select') {
-            var selectOptions = [];
-            if (rowName === '项目阶段') selectOptions = ['造型阶段', '方案阶段', '工艺阶段', 'NC阶段'];
-            else if (rowName === '是否完成') selectOptions = ['未评审', '已评审', '部分评审'];
-            else selectOptions = ['选项1', '选项2', '选项3'];
-            newTd.dataset.type = 'select';
-            newTd.setAttribute('onclick', 'showSelectEditor(event,this,\'' + name + '\',\'' + rowName + '\',' + JSON.stringify(selectOptions) + ')');
-            newTd.innerHTML = '<span class="dts-cell-display text-[12px] text-hub-text-dim cursor-pointer" title="点击选择">-</span>';
-        } else if (lastCell && lastCell.querySelector('.dts-cell-display')) {
-            var hasStatus = lastCell.querySelector('.status-cell');
-            if (hasStatus) {
-                newTd.setAttribute('onclick', 'showCellEditor(event,this,\'' + name + '\',\'' + rowName + '\')');
-                newTd.dataset.status = 'na';
-                newTd.dataset.pct = '0';
-                newTd.dataset.note = '';
-                newTd.innerHTML = '<span class="dts-cell-display" style="display:flex;flex-direction:column;align-items:center;gap:1px;cursor:pointer;"><span class="status-cell na">-</span><span style="font-size:12px;font-weight:600;color:var(--hub-text-dim);">0%</span></span>';
-            } else {
-                newTd.innerHTML = '<span class="dts-cell-display text-[12px] text-hub-text-dim cursor-pointer" title="点击编辑">-</span>';
-            }
-        } else if (lastCell && lastCell.querySelector('.role-name-cell')) {
-            newTd.innerHTML = '<span class="role-name-cell" onclick="editRoleName(this)" style="font-size:12px;color:var(--hub-text-secondary);cursor:pointer;border-bottom:1px dashed transparent;padding-bottom:1px;" title="点击编辑">-</span>';
-        } else {
-            newTd.innerHTML = '<span class="dts-cell-display text-[12px] text-hub-text-dim cursor-pointer" title="点击编辑">-</span>';
-        }
-        row.appendChild(newTd);
-    });
-}
-
-// === 筛选 ===
-function filterTable() {
-    var dept = document.getElementById('filterDept').value;
-    var level = document.getElementById('filterLevel').value;
-    var labor = document.getElementById('filterLabor').value;
-    var search = document.querySelector('.custom-search').value.trim().toLowerCase();
-    var rows = document.querySelectorAll('#personnelBody tr');
-    rows.forEach(function(row) {
-        var matchDept = !dept || row.dataset.dept === dept;
-        var matchLevel = !level || row.dataset.level === level;
-        var matchLabor = !labor || row.dataset.labor === labor;
-        var matchSearch = !search || row.textContent.toLowerCase().indexOf(search) > -1;
-        row.style.display = (matchDept && matchLevel && matchLabor && matchSearch) ? '' : 'none';
-    });
-}
-
-// === 项目弹窗 ===
+// === 15. 项目弹窗 ===
 function showAddProjectModal() {
     document.getElementById('modalOverlay').style.display = 'block';
     document.getElementById('addProjectModal').style.display = 'block';
     document.getElementById('projectName').focus();
-}
-
-function closeModal(modalId) {
-    document.getElementById('modalOverlay').style.display = 'none';
-    document.getElementById(modalId).style.display = 'none';
 }
 
 function addProject() {
@@ -566,7 +718,7 @@ function addProject() {
     syncToSupabase();
 }
 
-// === 人员库 ===
+// === 16. 人员库 CRUD ===
 function showAddPersonnelModal() {
     document.getElementById('personnelModalTitle').textContent = '新增人员';
     document.getElementById('personnelId').value = '';
@@ -677,193 +829,22 @@ function deletePersonnel(btn) {
     }
 }
 
-// === 统计页面 ===
-function updateStatsPage() {
+// === 17. 筛选 ===
+function filterTable() {
+    var dept = document.getElementById('filterDept').value;
+    var level = document.getElementById('filterLevel').value;
+    var labor = document.getElementById('filterLabor').value;
+    var search = document.querySelector('.custom-search').value.trim().toLowerCase();
     var rows = document.querySelectorAll('#personnelBody tr');
-    var total = rows.length;
-
-    var deptCounts = { '上车体': 0, '下车体': 0, '开闭件': 0 };
-    var laborCounts = { '自有': 0, '外协': 0 };
-    var levelCounts = { '方案负责人': 0, '总成负责人': 0, '工程师': 0, '建模员': 0 };
-
     rows.forEach(function(row) {
-        deptCounts[row.dataset.dept] = (deptCounts[row.dataset.dept] || 0) + 1;
-        laborCounts[row.dataset.labor] = (laborCounts[row.dataset.labor] || 0) + 1;
-        levelCounts[row.dataset.level] = (levelCounts[row.dataset.level] || 0) + 1;
-    });
-
-    var deptTotal = document.getElementById('deptTotal');
-    if (deptTotal) deptTotal.textContent = total;
-
-    var depts = ['上车体', '下车体', '开闭件'];
-    depts.forEach(function(dept, i) {
-        var count = deptCounts[dept] || 0;
-        var pct = total > 0 ? (count / total * 100).toFixed(1) : '0.0';
-        var el = document.getElementById('deptCount' + (i + 1));
-        if (el) el.textContent = count + ' (' + pct + '%)';
-    });
-
-    var laborTotal = document.getElementById('laborTotal');
-    if (laborTotal) laborTotal.textContent = total;
-
-    var labors = ['自有', '外协'];
-    labors.forEach(function(labor, i) {
-        var count = laborCounts[labor] || 0;
-        var pct = total > 0 ? (count / total * 100).toFixed(1) : '0.0';
-        var el = document.getElementById('laborCount' + (i + 1));
-        if (el) el.textContent = count + ' (' + pct + '%)';
+        var matchDept = !dept || row.dataset.dept === dept;
+        var matchLevel = !level || row.dataset.level === level;
+        var matchLabor = !labor || row.dataset.labor === labor;
+        var matchSearch = !search || row.textContent.toLowerCase().indexOf(search) > -1;
+        row.style.display = (matchDept && matchLevel && matchLabor && matchSearch) ? '' : 'none';
     });
 }
-
-// === 关闭所有弹窗 ===
-function closeAllModals() {
-    document.getElementById('modalOverlay').style.display = 'none';
-    var modals = document.querySelectorAll('.modal');
-    modals.forEach(function(m) { m.style.display = 'none'; });
-}
-
-// === 文本编辑器 ===
-function showTextEditor(e, td, proj, ms) {
-    e.stopPropagation();
-    if (activePopup) { activePopup.remove(); activePopup = null; }
-    activeCell = td;
-    var currentVal = td.querySelector('.dts-cell-display').textContent.trim();
-    if (currentVal === '-') currentVal = '';
-    var rect = td.getBoundingClientRect();
-    var popup = document.createElement('div');
-    popup.className = 'dts-popup';
-    popup.innerHTML = '<div class="popup-row"><label>' + ms + '</label><input type="text" id="teValue" value="' + currentVal + '" placeholder="输入内容..."></div><div class="popup-actions"><button class="popup-btn popup-btn-cancel" onclick="closeCellEditor()">取消</button><button class="popup-btn popup-btn-primary" onclick="saveTextEditor()">确定</button></div>';
-    document.body.appendChild(popup);
-    activePopup = popup;
-
-    var popupRect = popup.getBoundingClientRect();
-    var left = rect.left + rect.width / 2 - popupRect.width / 2;
-    var top = rect.bottom + 6;
-    if (top + popupRect.height > window.innerHeight) top = rect.top - popupRect.height - 6;
-    if (left < 0) left = 10;
-    if (left + popupRect.width > window.innerWidth) left = window.innerWidth - popupRect.width - 10;
-    popup.style.left = left + 'px';
-    popup.style.top = top + 'px';
-    document.getElementById('teValue').focus();
-}
-
-function saveTextEditor() {
-    if (!activeCell || !activePopup) return;
-    var val = document.getElementById('teValue').value.trim();
-    var display = activeCell.querySelector('.dts-cell-display');
-    if (val) {
-        display.textContent = val;
-        display.className = 'dts-cell-display text-[12px] text-hub-foreground cursor-pointer';
-    } else {
-        display.textContent = '-';
-        display.className = 'dts-cell-display text-[12px] text-hub-text-dim cursor-pointer';
-    }
-    closeCellEditor();
-    syncToSupabase();
-}
-
-// === 百分比编辑器 ===
-function showPercentEditor(e, td, proj, ms) {
-    e.stopPropagation();
-    if (activePopup) { activePopup.remove(); activePopup = null; }
-    activeSelectCell = td;
-    var currentVal = td.querySelector('.dts-cell-display').textContent.trim().replace('%', '');
-    if (currentVal === '-' || currentVal === '') currentVal = '0';
-    var rect = td.getBoundingClientRect();
-    var popup = document.createElement('div');
-    popup.className = 'dts-popup';
-    var options = ['0', '10', '20', '30', '40', '50', '60', '70', '80', '90', '100'];
-    var optionsHtml = '<div class="popup-row"><label>' + ms + '</label><select id="seValue">';
-    options.forEach(function(opt) {
-        optionsHtml += '<option value="' + opt + '"' + (currentVal === opt ? ' selected' : '') + '>' + opt + '%</option>';
-    });
-    optionsHtml += '</select></div>';
-    popup.innerHTML = optionsHtml + '<div class="popup-actions"><button class="popup-btn popup-btn-cancel" onclick="closeCellEditor()">取消</button><button class="popup-btn popup-btn-primary" onclick="savePercentEditor()">确定</button></div>';
-    document.body.appendChild(popup);
-    activePopup = popup;
-
-    var popupRect = popup.getBoundingClientRect();
-    var left = rect.left + rect.width / 2 - popupRect.width / 2;
-    var top = rect.bottom + 6;
-    if (top + popupRect.height > window.innerHeight) top = rect.top - popupRect.height - 6;
-    if (left < 0) left = 10;
-    if (left + popupRect.width > window.innerWidth) left = window.innerWidth - popupRect.width - 10;
-    popup.style.left = left + 'px';
-    popup.style.top = top + 'px';
-}
-
-function savePercentEditor() {
-    if (!activeSelectCell || !activePopup) return;
-    var val = document.getElementById('seValue').value;
-    var display = activeSelectCell.querySelector('.dts-cell-display');
-    var colorClass = 'text-hub-text-dim';
-    var pct = parseInt(val);
-    if (pct >= 100) colorClass = 'text-[#34d399]';
-    else if (pct >= 70) colorClass = 'text-[#4f8cff]';
-    else if (pct >= 40) colorClass = 'text-[#fbbf24]';
-    else if (pct > 0) colorClass = 'text-[#f87171]';
-    display.textContent = val + '%';
-    display.className = 'dts-cell-display text-[12px] font-semibold ' + colorClass + ' cursor-pointer';
-    closeCellEditor();
-    activeSelectCell = null;
-    syncToSupabase();
-}
-
-// === 下拉选择编辑器 ===
-function showSelectEditor(e, td, proj, ms, options) {
-    e.stopPropagation();
-    if (activePopup) { activePopup.remove(); activePopup = null; }
-    activeSelectCell = td;
-    var currentVal = td.querySelector('.dts-cell-display').textContent.trim();
-    if (currentVal === '-') currentVal = '';
-    var rect = td.getBoundingClientRect();
-    var popup = document.createElement('div');
-    popup.className = 'dts-popup';
-    var optionsHtml = '<div class="popup-row"><label>' + ms + '</label><select id="seValue">';
-    optionsHtml += '<option value="">-</option>';
-    options.forEach(function(opt) {
-        optionsHtml += '<option value="' + opt + '"' + (currentVal === opt ? ' selected' : '') + '>' + opt + '</option>';
-    });
-    optionsHtml += '</select></div>';
-    popup.innerHTML = optionsHtml + '<div class="popup-actions"><button class="popup-btn popup-btn-cancel" onclick="closeCellEditor()">取消</button><button class="popup-btn popup-btn-primary" onclick="saveSelectEditor()">确定</button></div>';
-    document.body.appendChild(popup);
-    activePopup = popup;
-
-    var popupRect = popup.getBoundingClientRect();
-    var left = rect.left + rect.width / 2 - popupRect.width / 2;
-    var top = rect.bottom + 6;
-    if (top + popupRect.height > window.innerHeight) top = rect.top - popupRect.height - 6;
-    if (left < 0) left = 10;
-    if (left + popupRect.width > window.innerWidth) left = window.innerWidth - popupRect.width - 10;
-    popup.style.left = left + 'px';
-    popup.style.top = top + 'px';
-}
-
-function saveSelectEditor() {
-    if (!activeSelectCell || !activePopup) return;
-    var val = document.getElementById('seValue').value;
-    var display = activeSelectCell.querySelector('.dts-cell-display');
-    if (val) {
-        display.textContent = val;
-        var colorClass = 'text-hub-foreground';
-        if (val === '已评审') colorClass = 'text-[#34d399]';
-        else if (val === '部分评审') colorClass = 'text-[#fbbf24]';
-        else if (val === '未评审') colorClass = 'text-[#f87171]';
-        else if (val === 'NC阶段') colorClass = 'text-[#a78bfa]';
-        else if (val === '工艺阶段') colorClass = 'text-[#4f8cff]';
-        else if (val === '方案阶段') colorClass = 'text-[#34d399]';
-        else if (val === '造型阶段') colorClass = 'text-[#fbbf24]';
-        display.className = 'dts-cell-display text-[12px] font-semibold ' + colorClass + ' cursor-pointer';
-    } else {
-        display.textContent = '-';
-        display.className = 'dts-cell-display text-[12px] text-hub-text-dim cursor-pointer';
-    }
-    closeCellEditor();
-    activeSelectCell = null;
-    syncToSupabase();
-}
-
-// === 导入导出 ===
+// === 18. 导入导出 ===
 function importData() {
     var input = document.createElement('input');
     input.type = 'file';
@@ -958,3 +939,17 @@ function exportData() {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
 }
+
+// === 19. 全局事件 ===
+document.addEventListener('click', function(e) {
+    if (activePopup && !activePopup.contains(e.target)) {
+        closeCellEditor();
+    }
+});
+
+// === 20. 启动代码 ===
+document.addEventListener('DOMContentLoaded', function() {
+    lucide.createIcons();
+    updateDashboardKPIs();
+    initSupabase();
+});
