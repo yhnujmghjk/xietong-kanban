@@ -158,14 +158,6 @@ async function loadFromSupabase() {
         return;
     }
     if (data && data.data) {
-        var remoteHead = data.data.matrixHead || '';
-        var remoteThCount = (remoteHead.match(/<th/g) || []).length;
-        var localThCount = document.querySelectorAll('#matrixHead tr th').length;
-        if (remoteThCount !== localThCount) {
-            console.log('数据库数据列数不一致，使用当前 HTML 初始化');
-            syncToSupabase();
-            return;
-        }
         applyState(data.data);
     }
 }
