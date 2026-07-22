@@ -419,7 +419,7 @@ function deleteProjectColumn(btn) {
 
     th.remove();
     var table = document.querySelector('.matrix-table');
-    table.querySelectorAll('tbody tr').forEach(function(row) {
+    table.querySelectorAll('tbody tr, tbody tbody tr').forEach(function(row) {
         var cells = row.querySelectorAll('td');
         var firstTd = cells[0];
         if (firstTd && firstTd.hasAttribute('colspan') && cells.length === 1) {
@@ -453,7 +453,7 @@ function addProjectColumnToTable(name, status) {
     plusTh.parentNode.insertBefore(newTh, plusTh);
 
     var table = document.querySelector('.matrix-table');
-    table.querySelectorAll('tbody tr').forEach(function(row) {
+    table.querySelectorAll('tbody tr, tbody tbody tr').forEach(function(row) {
         var cells = row.querySelectorAll('td');
         if (cells.length === 0) return;
 
@@ -464,14 +464,17 @@ function addProjectColumnToTable(name, status) {
         }
 
         var newTd = document.createElement('td');
-        newTd.style.cssText = 'text-align:center;border-right:1px solid var(--hub-border);';
+        // 从该行已有单元格复制边框样式，确保分割线一致
+        var refCell = cells[cells.length - 1];
+        var refStyle = refCell ? refCell.style : {};
+        var cellCss = 'text-align:center;';
+        if (refStyle.borderBottom) cellCss += 'border-bottom:' + refStyle.borderBottom + ';';
+        if (refStyle.borderRight) cellCss += 'border-right:' + refStyle.borderRight + ';';
+        if (refStyle.borderTop) cellCss += 'border-top:' + refStyle.borderTop + ';';
+        newTd.style.cssText = cellCss;
 
         var rowNameEl = row.querySelector('.proj-name');
         var rowName = rowNameEl ? rowNameEl.textContent.trim().replace(/^[├└]\s*/, '').replace(/ ▸.*/, '') : '';
-
-        if (row.id === 'subAssemblyToggle' || rowName === '分项目经理' || rowName === '质量经理') {
-            newTd.style.borderBottom = '2px solid var(--hub-border)';
-        }
 
         var lastCell = cells[cells.length - 1];
         if (lastCell && lastCell.dataset && lastCell.dataset.type === 'text') {
