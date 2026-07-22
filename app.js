@@ -593,7 +593,34 @@ function addProjectColumnToTable(name, status) {
         } else if (lastCell && lastCell.querySelector('.role-name-cell')) {
             newTd.innerHTML = '<span class="role-name-cell" onclick="editRoleName(this)" style="font-size:12px;color:var(--hub-text-secondary);cursor:pointer;border-bottom:1px dashed transparent;padding-bottom:1px;" title="点击编辑">-</span>';
         } else {
-            newTd.innerHTML = '<span class="dts-cell-display text-[12px] text-hub-text-dim cursor-pointer" title="点击编辑">-</span>';
+            // 当 lastCell 没有类型信息时（表格只剩一列），用 rowName 回退判断
+            if (rowName === '分项目经理' || rowName === '质量经理' || rowName === '上车体' || rowName === '下车体' || rowName === '开闭件') {
+                newTd.innerHTML = '<span class="role-name-cell" onclick="editRoleName(this)" style="font-size:12px;color:var(--hub-text-secondary);cursor:pointer;border-bottom:1px dashed transparent;padding-bottom:1px;" title="点击编辑">-</span>';
+            } else if (rowName === 'DTS' || rowName === '技术方案' || rowName === '主断面' || rowName === '碰撞' || rowName === '扭转') {
+                newTd.setAttribute('onclick', 'showCellEditor(event,this,\'' + name + '\',\'' + rowName + '\')');
+                newTd.dataset.status = 'na';
+                newTd.dataset.pct = '0';
+                newTd.dataset.note = '';
+                newTd.innerHTML = '<span class="dts-cell-display" style="display:flex;flex-direction:column;align-items:center;gap:1px;cursor:pointer;"><span class="status-cell na">-</span><span style="font-size:12px;font-weight:600;color:var(--hub-text-dim);">0%</span></span>';
+            } else if (rowName === '评审主题' || rowName === '评审内容') {
+                newTd.dataset.type = 'text';
+                newTd.setAttribute('onclick', 'showTextEditor(event,this,\'' + name + '\',\'' + rowName + '\')');
+                newTd.innerHTML = '<span class="dts-cell-display text-[12px] text-hub-text-dim cursor-pointer" title="点击编辑">-</span>';
+            } else if (rowName === '项目阶段') {
+                newTd.dataset.type = 'select';
+                newTd.setAttribute('onclick', 'showSelectEditor(event,this,\'' + name + '\',\'' + rowName + '\',' + JSON.stringify(['造型阶段','方案阶段','工艺阶段','NC阶段']) + ')');
+                newTd.innerHTML = '<span class="dts-cell-display text-[12px] text-hub-text-dim cursor-pointer" title="点击选择">-</span>';
+            } else if (rowName === '是否完成') {
+                newTd.dataset.type = 'select';
+                newTd.setAttribute('onclick', 'showSelectEditor(event,this,\'' + name + '\',\'' + rowName + '\',' + JSON.stringify(['未评审','已评审','部分评审']) + ')');
+                newTd.innerHTML = '<span class="dts-cell-display text-[12px] text-hub-text-dim cursor-pointer" title="点击选择">-</span>';
+            } else if (rowName === '交付') {
+                newTd.dataset.type = 'select';
+                newTd.setAttribute('onclick', 'showPercentEditor(event,this,\'' + name + '\',\'' + rowName + '\')');
+                newTd.innerHTML = '<span class="dts-cell-display text-[12px] font-semibold text-hub-text-dim cursor-pointer" title="点击选择">0%</span>';
+            } else {
+                newTd.innerHTML = '<span class="dts-cell-display text-[12px] text-hub-text-dim cursor-pointer" title="点击编辑">-</span>';
+            }
         }
         row.appendChild(newTd);
     });
