@@ -128,6 +128,7 @@ function applyState(state) {
 
         updateDashboardKPIs();
         updateStatsPage();
+        if (window.lucide) lucide.createIcons();
     } catch (e) {
         console.error('applyState 错误:', e);
     } finally {
