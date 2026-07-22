@@ -445,7 +445,7 @@ function showAddProjectColumnModal() {
 function addProjectColumnToTable(name, status) {
     var plusTh = document.querySelector('#matrixHead tr th:last-child');
     var newTh = document.createElement('th');
-    newTh.style.cssText = 'text-align:center;min-width:64px;position:relative;border-right:1px solid var(--hub-border);';
+    newTh.style.cssText = 'text-align:left;min-width:64px;position:relative;border-right:1px solid var(--hub-border);';
     var statusColor = status === '进行中' ? 'var(--state-success)' : status === '暂停' ? 'var(--state-warning)' : 'var(--hub-text-dim)';
     newTh.innerHTML = name +
         '<button class="col-del-btn" title="删除项目 ' + name + '" onclick="deleteProjectColumn(this)">&times;</button>' +
@@ -465,7 +465,7 @@ function addProjectColumnToTable(name, status) {
 
         if (row.querySelector('#customOptLabel')) {
             var optTd = document.createElement('td');
-            optTd.style.cssText = 'text-align:center;';
+            optTd.style.cssText = 'text-align:left;';
             var optRefCell = cells[cells.length - 1];
             if (optRefCell && optRefCell.style.borderBottom) optTd.style.borderBottom = optRefCell.style.borderBottom;
             if (optRefCell && optRefCell.style.borderRight) optTd.style.borderRight = optRefCell.style.borderRight;
@@ -477,7 +477,7 @@ function addProjectColumnToTable(name, status) {
         // 从该行已有单元格复制边框样式，确保分割线一致
         var refCell = cells[cells.length - 1];
         var refStyle = refCell ? refCell.style : {};
-        var cellCss = 'text-align:center;';
+        var cellCss = 'text-align:left;';
         if (refStyle.borderBottom) cellCss += 'border-bottom:' + refStyle.borderBottom + ';';
         if (refStyle.borderRight) cellCss += 'border-right:' + refStyle.borderRight + ';';
         if (refStyle.borderTop) cellCss += 'border-top:' + refStyle.borderTop + ';';
