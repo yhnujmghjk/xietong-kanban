@@ -426,7 +426,7 @@ function deleteProjectColumn(btn) {
             firstTd.colSpan = parseInt(firstTd.colSpan) - 1;
             return;
         }
-        if (cells[thIndex]) cells[thIndex].remove();
+        if (cells.length > thIndex) cells[thIndex].remove();
     });
     updateDashboardKPIs();
     syncToSupabase();
@@ -464,6 +464,12 @@ function addProjectColumnToTable(name, status) {
         }
 
         if (row.querySelector('#customOptLabel')) {
+            var optTd = document.createElement('td');
+            optTd.style.cssText = 'text-align:center;';
+            var optRefCell = cells[cells.length - 1];
+            if (optRefCell && optRefCell.style.borderBottom) optTd.style.borderBottom = optRefCell.style.borderBottom;
+            if (optRefCell && optRefCell.style.borderRight) optTd.style.borderRight = optRefCell.style.borderRight;
+            row.appendChild(optTd);
             return;
         }
 
