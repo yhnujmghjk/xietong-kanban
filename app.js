@@ -553,6 +553,13 @@ function addProjectColumnToTable(name, status) {
         var rowNameEl = row.querySelector('.proj-name');
         var rowName = rowNameEl ? rowNameEl.textContent.trim().replace(/^[├└]\s*/, '').replace(/ ▸.*/, '') : '';
 
+        // 角色信息、技术交付、质量评审 分组标题行不显示任何内容
+        var firstCellText = cells[0].textContent.trim();
+        if (firstCellText === '角色信息' || firstCellText === '技术交付' || firstCellText === '质量评审') {
+            row.appendChild(newTd);
+            return;
+        }
+
         var lastCell = cells[cells.length - 1];
         if (lastCell && lastCell.dataset && lastCell.dataset.type === 'text') {
             newTd.dataset.type = 'text';
