@@ -554,9 +554,10 @@ function addProjectColumnToTable(name, status) {
         var rowNameEl = row.querySelector('.proj-name');
         var rowName = rowNameEl ? rowNameEl.textContent.trim().replace(/^[├└]\s*/, '').replace(/ ▸.*/, '') : '';
 
-        // 角色信息、技术交付、质量评审 分组标题行不显示任何内容
+        // 分组标题行（角色信息、技术交付、质量评审、总成负责人、性能指标）不显示任何内容
         var firstCellText = cells[0].textContent.trim();
-        if (firstCellText === '角色信息' || firstCellText === '技术交付' || firstCellText === '质量评审') {
+        if (firstCellText === '角色信息' || firstCellText === '技术交付' || firstCellText === '质量评审' ||
+            firstCellText.indexOf('总成负责人') === 0 || firstCellText.indexOf('性能指标') === 0) {
             row.appendChild(newTd);
             return;
         }
