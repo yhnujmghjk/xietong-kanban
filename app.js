@@ -445,7 +445,7 @@ function showAddProjectColumnModal() {
 function addProjectColumnToTable(name, status) {
     var plusTh = document.querySelector('#matrixHead tr th:last-child');
     var newTh = document.createElement('th');
-    newTh.style.cssText = 'text-align:center;min-width:64px;position:relative;';
+    newTh.style.cssText = 'text-align:center;min-width:64px;position:relative;border-right:1px solid var(--hub-border);';
     var statusColor = status === '进行中' ? 'var(--state-success)' : status === '暂停' ? 'var(--state-warning)' : 'var(--hub-text-dim)';
     newTh.innerHTML = name +
         '<button class="col-del-btn" title="删除项目 ' + name + '" onclick="deleteProjectColumn(this)">&times;</button>' +
@@ -464,10 +464,14 @@ function addProjectColumnToTable(name, status) {
         }
 
         var newTd = document.createElement('td');
-        newTd.style.textAlign = 'center';
+        newTd.style.cssText = 'text-align:center;border-right:1px solid var(--hub-border);';
 
         var rowNameEl = row.querySelector('.proj-name');
         var rowName = rowNameEl ? rowNameEl.textContent.trim().replace(/^[├└]\s*/, '').replace(/ ▸.*/, '') : '';
+
+        if (row.id === 'subAssemblyToggle' || rowName === '分项目经理' || rowName === '质量经理') {
+            newTd.style.borderBottom = '2px solid var(--hub-border)';
+        }
 
         var lastCell = cells[cells.length - 1];
         if (lastCell && lastCell.dataset && lastCell.dataset.type === 'text') {
