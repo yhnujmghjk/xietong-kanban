@@ -511,14 +511,14 @@ function showAddProjectColumnModal() {
 }
 
 function addProjectColumnToTable(name, status) {
-    var plusTh = document.querySelector('#matrixHead tr th:last-child');
+    var headRow = document.querySelector('#matrixHead tr');
     var newTh = document.createElement('th');
     newTh.style.cssText = 'text-align:center;min-width:64px;position:relative;border-right:1px solid var(--hub-border);';
     var statusColor = status === '进行中' ? 'var(--state-success)' : status === '暂停' ? 'var(--state-warning)' : 'var(--hub-text-dim)';
     newTh.innerHTML = name +
         '<button class="col-del-btn" title="删除项目 ' + name + '" onclick="deleteProjectColumn(this)">&times;</button>' +
         '<select class="proj-status-select" data-status="' + status + '" onchange="updateProjStatus(this)" style="color:' + statusColor + ';"><option' + (status === '进行中' ? ' selected' : '') + '>进行中</option><option' + (status === '暂停' ? ' selected' : '') + '>暂停</option><option' + (status === '规划中' ? ' selected' : '') + '>规划中</option></select>';
-    plusTh.parentNode.insertBefore(newTh, plusTh);
+    headRow.appendChild(newTh);
 
     var table = document.querySelector('.matrix-table');
     table.querySelectorAll('tbody tr, tbody tbody tr').forEach(function(row) {
