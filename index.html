@@ -7,6 +7,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.3.1/dist/index.global.js"></script>
     <script src="https://unpkg.com/lucide@1.8.0/dist/umd/lucide.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body class="min-h-screen font-sans antialiased">
@@ -609,14 +610,35 @@
                             <button onclick="exportData()" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded text-sm text-hub-text-secondary bg-transparent border border-hub-border hover:bg-hub-surface-hover transition-colors">导出报表</button>
                         </div>
                     </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div class="bg-hub-card border border-hub-border rounded-xl p-5">
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="text-sm font-semibold text-hub-foreground">云端同步状态</span>
+                                <span id="syncStatusBadge" class="text-[10px] px-2 py-0.5 rounded-full bg-hub-surface-elevated text-hub-text-dim border border-hub-border">未连接</span>
+                            </div>
+                            <div class="text-xs text-hub-text-secondary leading-relaxed">
+                                <div id="syncStatusText" class="mb-2">Supabase 未配置，当前运行在本地模式。数据仅保存在浏览器中，刷新后丢失。</div>
+                                <div class="text-hub-text-dim">在 app.js 文件顶部填写 SUPABASE_URL 和 SUPABASE_ANON_KEY 后即可启用实时同步。</div>
+                            </div>
+                        </div>
+                        <div class="bg-hub-card border border-hub-border rounded-xl p-5">
+                            <div class="text-sm font-semibold text-hub-foreground mb-3">使用说明</div>
+                            <div class="text-xs text-hub-text-secondary leading-relaxed space-y-1">
+                                <div>1. 多人同时编辑时，数据自动实时同步（毫秒级）</div>
+                                <div>2. 导入数据会覆盖当前所有数据并同步到云端</div>
+                                <div>3. 导出报表可备份当前数据为 JSON 文件</div>
+                                <div>4. 所有更改自动保存到云端，无需手动操作</div>
+                            </div>
+                        </div>
+                    </div>
                     <div class="bg-hub-card border border-hub-border rounded-xl p-6">
-                        <div class="text-center py-12">
-                            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" class="mx-auto text-hub-text-dim mb-4">
+                        <div class="text-center py-8">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" class="mx-auto text-hub-text-dim mb-3">
                                 <path d="M2 4l6-2 6 2M2 8l6 2 6-2M2 12l6 2 6-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path>
                                 <path d="M8 2v12" stroke="currentColor" stroke-width="1.5"></path>
                             </svg>
-                            <div class="text-lg font-semibold text-hub-foreground mb-2">数据管理模块</div>
-                            <div class="text-sm text-hub-text-secondary">点击上方按钮导入或导出数据</div>
+                            <div class="text-sm font-semibold text-hub-foreground mb-1">数据导入 / 导出</div>
+                            <div class="text-xs text-hub-text-secondary">点击上方按钮导入或导出数据</div>
                         </div>
                     </div>
                 </div>

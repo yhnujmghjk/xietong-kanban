@@ -1,65 +1,148 @@
-var lastDataHash = '';
+// === Supabase 配置（替换为你自己的） ===
+var SUPABASE_URL = 'YOUR_SUPABASE_URL';
+var SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+var sb = null;
+var isRemoteUpdate = false;
+var syncTimer = null;
 
-function fetchDataFromGitHub() {
-    var url = 'https://raw.githubusercontent.com/yhnujmghjk/xietong-kanban/main/data.json';
-    fetch(url, { cache: 'no-store' })
-        .then(function(response) {
-            if (!response.ok) throw new Error('Network response was not ok');
-            return response.text();
-        })
-        .then(function(text) {
-            var hash = text.split('').reduce(function(a, b) { a = ((a << 5) - a) + b.charCodeAt(0); return a & a; }, 0);
-            if (hash !== lastDataHash) {
-                lastDataHash = hash;
-                try {
-                    var data = JSON.parse(text);
-                    loadDataFromGitHub(data);
-                    console.log('数据已同步');
-                } catch (e) {
-                    console.error('解析数据失败:', e);
-                }
+// === 初始化 ===
+function initSupabase() {
+    if (SUPABASE_URL === 'YOUR_SUPABASE_URL' || !window.supabase) {
+        console.log('Supabase 未配置，运行在本地模式');
+        updateSyncStatus('offline', 'Supabase 未配置，当前运行在本地模式。数据仅保存在浏览器中，刷新后丢失。');
+        return;
+    }
+    sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    updateSyncStatus('connecting', '正在连接 Supabase...');
+    setupRealtime();
+    loadFromSupabase();
+}
+
+function updateSyncStatus(status, message) {
+    var badge = document.getElementById('syncStatusBadge');
+    var text = document.getElementById('syncStatusText');
+    if (badge) {
+        if (status === 'online') {
+            badge.textContent = '已连接';
+            badge.className = 'text-[10px] px-2 py-0.5 rounded-full bg-[rgba(52,211,153,0.15)] text-[#34d399] border border-[rgba(52,211,153,0.3)]';
+        } else if (status === 'connecting') {
+            badge.textContent = '连接中';
+            badge.className = 'text-[10px] px-2 py-0.5 rounded-full bg-[rgba(251,191,36,0.15)] text-[#fbbf24] border border-[rgba(251,191,36,0.3)]';
+        } else {
+            badge.textContent = '未连接';
+            badge.className = 'text-[10px] px-2 py-0.5 rounded-full bg-hub-surface-elevated text-hub-text-dim border border-hub-border';
+        }
+    }
+    if (text && message) text.textContent = message;
+}
+
+function setupRealtime() {
+    if (!sb) return;
+    sb.channel('public:app_state')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'app_state' }, function(payload) {
+            if (isRemoteUpdate) return;
+            if (payload.new && payload.new.data) {
+                applyState(payload.new.data);
             }
         })
-        .catch(function(error) {
-            console.log('自动同步失败，使用本地数据:', error);
+        .subscribe(function(status) {
+            if (status === 'SUBSCRIBED') {
+                updateSyncStatus('online', '已连接 Supabase，数据实时同步中。多人编辑将自动同步到所有设备。');
+            }
         });
 }
 
-function loadDataFromGitHub(data) {
-    if (data.personnel) {
-        var tbody = document.getElementById('personnelBody');
-        tbody.innerHTML = '';
-        data.personnel.forEach(function(p) {
-            var row = document.createElement('tr');
-            row.dataset.dept = p.dept || '';
-            row.dataset.level = p.level || '';
-            row.dataset.labor = p.labor || '';
-            var statusClass = p.status === '正常' ? 'text-state-success' : 'text-state-warning';
-            row.innerHTML =
-                '<td><span class="font-semibold">' + (p.name || '') + '</span></td>' +
-                '<td>' + (p.level || '') + '</td>' +
-                '<td>' + (p.assembly || '') + '</td>' +
-                '<td>' + (p.dept || '') + '</td>' +
-                '<td>' + (p.labor || '') + '</td>' +
-                '<td class="text-hub-text-secondary">' + (p.expYears || '') + '</td>' +
-                '<td class="text-hub-text-secondary">' + (p.age || '') + '</td>' +
-                '<td>' + (p.project || '') + '</td>' +
-                '<td>' + (p.ratio || '') + '</td>' +
-                '<td class="' + statusClass + '">' + (p.status || '') + '</td>' +
-                '<td><button onclick="editPersonnel(this)" class="text-hub-text-secondary hover:text-hub-primary transition-colors px-2 py-1 rounded">&#9998; 编辑</button><button onclick="deletePersonnel(this)" class="text-hub-text-secondary hover:text-state-error transition-colors px-2 py-1 rounded">&#10005; 删除</button></td>';
-            tbody.appendChild(row);
-        });
+// === 数据同步 ===
+function collectState() {
+    var state = {};
+    var personnelBody = document.getElementById('personnelBody');
+    state.personnel = personnelBody ? personnelBody.innerHTML : '';
+
+    var matrixHead = document.getElementById('matrixHead');
+    state.matrixHead = matrixHead ? matrixHead.innerHTML : '';
+
+    var matrixBody = document.getElementById('matrixBody');
+    state.matrixBody = matrixBody ? matrixBody.innerHTML : '';
+
+    var subAssembly = document.getElementById('subAssemblyRows');
+    state.subAssemblyDisplay = subAssembly ? subAssembly.style.display : 'none';
+
+    var perfSub = document.getElementById('perfSubRows');
+    state.perfSubDisplay = perfSub ? perfSub.style.display : 'none';
+
+    return state;
+}
+
+function applyState(state) {
+    if (!state) return;
+    isRemoteUpdate = true;
+
+    if (state.personnel) {
+        var personnelBody = document.getElementById('personnelBody');
+        if (personnelBody) personnelBody.innerHTML = state.personnel;
     }
+    if (state.matrixHead) {
+        var matrixHead = document.getElementById('matrixHead');
+        if (matrixHead) matrixHead.innerHTML = state.matrixHead;
+    }
+    if (state.matrixBody) {
+        var matrixBody = document.getElementById('matrixBody');
+        if (matrixBody) matrixBody.innerHTML = state.matrixBody;
+    }
+    if (state.subAssemblyDisplay !== undefined) {
+        var subAssembly = document.getElementById('subAssemblyRows');
+        if (subAssembly) subAssembly.style.display = state.subAssemblyDisplay;
+        var arrow = document.getElementById('subAssemblyArrow');
+        if (arrow) arrow.style.transform = state.subAssemblyDisplay === 'none' ? 'rotate(0deg)' : 'rotate(90deg)';
+    }
+    if (state.perfSubDisplay !== undefined) {
+        var perfSub = document.getElementById('perfSubRows');
+        if (perfSub) perfSub.style.display = state.perfSubDisplay;
+        var perfArrow = document.getElementById('perfSubArrow');
+        if (perfArrow) perfArrow.style.transform = state.perfSubDisplay === 'none' ? 'rotate(0deg)' : 'rotate(90deg)';
+    }
+
     updateDashboardKPIs();
     updateStatsPage();
+    isRemoteUpdate = false;
 }
 
+function syncToSupabase() {
+    if (!sb || isRemoteUpdate) return;
+    if (syncTimer) clearTimeout(syncTimer);
+    syncTimer = setTimeout(async function() {
+        var state = collectState();
+        var { error } = await sb.from('app_state')
+            .upsert({ id: 1, data: state, updated_at: new Date().toISOString() });
+        if (error) console.error('同步失败:', error);
+    }, 500);
+}
+
+async function loadFromSupabase() {
+    if (!sb) return;
+    var { data, error } = await sb.from('app_state').select('data').eq('id', 1).single();
+    if (error) {
+        if (error.code === 'PGRST116') {
+            // 首次使用，上传当前 HTML 状态作为初始数据
+            syncToSupabase();
+        } else {
+            console.error('加载数据失败:', error);
+        }
+        return;
+    }
+    if (data && data.data) {
+        applyState(data.data);
+    }
+}
+
+// === 启动 ===
 document.addEventListener('DOMContentLoaded', function() {
     lucide.createIcons();
-    fetchDataFromGitHub();
-    setInterval(fetchDataFromGitHub, 60000);
+    updateDashboardKPIs();
+    initSupabase();
 });
 
+// === KPI 更新 ===
 function updateDashboardKPIs() {
     var projThs = document.querySelectorAll('#matrixHead tr th');
     var projectCount = Math.max(0, projThs.length - 2);
@@ -105,6 +188,7 @@ function updateDashboardKPIs() {
     if (kpiAnomalyCount) kpiAnomalyCount.textContent = errCount + ' 项异常';
 }
 
+// === 页面切换 ===
 function switchPage(pageId) {
     document.querySelectorAll('.page-content').forEach(function(el) {
         el.classList.add('hidden');
@@ -133,15 +217,14 @@ function toggleMobileMenu() {
     }
 }
 
+// === 矩阵单元格编辑器 ===
 var activePopup = null;
 var activeCell = null;
+var activeSelectCell = null;
 
 function showCellEditor(e, td, proj, ms) {
     e.stopPropagation();
-    if (activePopup) {
-        activePopup.remove();
-        activePopup = null;
-    }
+    if (activePopup) { activePopup.remove(); activePopup = null; }
     activeCell = td;
     var status = td.dataset.status || 'na';
     var pct = td.dataset.pct || '0';
@@ -149,11 +232,18 @@ function showCellEditor(e, td, proj, ms) {
     var rect = td.getBoundingClientRect();
     var popup = document.createElement('div');
     popup.className = 'dts-popup';
-    popup.style.left = rect.left + rect.width / 2 - 90 + 'px';
-    popup.style.top = rect.bottom + 6 + 'px';
     popup.innerHTML = '<div class="popup-row"><label>状态</label><select id="peStatus"><option value="ok"' + (status === 'ok' ? ' selected' : '') + '>✓ 正常</option><option value="warn"' + (status === 'warn' ? ' selected' : '') + '>⚠ 预警</option><option value="err"' + (status === 'err' ? ' selected' : '') + '>× 报警</option><option value="na"' + (status === 'na' ? ' selected' : '') + '>- 未开始</option></select></div><div class="popup-row"><label>百分比</label><input type="text" id="pePct" value="' + pct + '%"></div><div class="popup-row"><label>备注</label><input type="text" id="peNote" value="' + note + '" placeholder="填写备注..."></div><div class="popup-actions"><button class="popup-btn popup-btn-cancel" onclick="closeCellEditor()">取消</button><button class="popup-btn popup-btn-primary" onclick="saveCellEditor()">确定</button></div>';
     document.body.appendChild(popup);
     activePopup = popup;
+
+    var popupRect = popup.getBoundingClientRect();
+    var left = rect.left + rect.width / 2 - popupRect.width / 2;
+    var top = rect.bottom + 6;
+    if (top + popupRect.height > window.innerHeight) top = rect.top - popupRect.height - 6;
+    if (left < 0) left = 10;
+    if (left + popupRect.width > window.innerWidth) left = window.innerWidth - popupRect.width - 10;
+    popup.style.left = left + 'px';
+    popup.style.top = top + 'px';
 }
 
 function saveCellEditor() {
@@ -170,13 +260,11 @@ function saveCellEditor() {
     activeCell.querySelector('.dts-cell-display').innerHTML = '<span class="status-cell ' + s + '">' + sym[s] + '</span><span style="font-size:12px;font-weight:600;color:' + c + ';">' + p + '%</span>';
     closeCellEditor();
     updateDashboardKPIs();
+    syncToSupabase();
 }
 
 function closeCellEditor() {
-    if (activePopup) {
-        activePopup.remove();
-        activePopup = null;
-    }
+    if (activePopup) { activePopup.remove(); activePopup = null; }
     activeCell = null;
     activeSelectCell = null;
 }
@@ -187,6 +275,7 @@ document.addEventListener('click', function(e) {
     }
 });
 
+// === 角色名编辑 ===
 function editRoleName(span) {
     var currentText = span.textContent === '-' ? '' : span.textContent;
     var input = document.createElement('input');
@@ -204,21 +293,17 @@ function editRoleName(span) {
         span.textContent = val || '-';
         span.style.display = '';
         if (input.parentNode) input.remove();
+        syncToSupabase();
     }
 
     input.addEventListener('blur', finish);
     input.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            input.blur();
-        }
-        if (e.key === 'Escape') {
-            input.value = '';
-            input.blur();
-        }
+        if (e.key === 'Enter') { e.preventDefault(); input.blur(); }
+        if (e.key === 'Escape') { input.value = ''; input.blur(); }
     });
 }
 
+// === 自定义选项行 ===
 function editCustomOptLabel(span) {
     var currentText = span.textContent.replace(/^\+\s*/, '');
     if (currentText === '添加选项') currentText = '';
@@ -246,10 +331,7 @@ function editCustomOptLabel(span) {
             delBtn.className = 'custom-opt-del';
             delBtn.textContent = '×';
             delBtn.title = '删除此行';
-            delBtn.onclick = function(e) {
-                e.stopPropagation();
-                deleteCustomOptRow(span.closest('tr'));
-            };
+            delBtn.onclick = function(e) { e.stopPropagation(); deleteCustomOptRow(span.closest('tr')); };
             span.parentNode.insertBefore(delBtn, span.nextSibling);
 
             var row = span.closest('tr');
@@ -279,25 +361,22 @@ function editCustomOptLabel(span) {
         }
         span.style.display = '';
         if (input.parentNode) input.remove();
+        syncToSupabase();
     }
 
     input.addEventListener('blur', finish);
     input.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            input.blur();
-        }
-        if (e.key === 'Escape') {
-            input.value = '';
-            input.blur();
-        }
+        if (e.key === 'Enter') { e.preventDefault(); input.blur(); }
+        if (e.key === 'Escape') { input.value = ''; input.blur(); }
     });
 }
 
 function deleteCustomOptRow(row) {
     row.remove();
+    syncToSupabase();
 }
 
+// === 折叠行 ===
 function togglePerfSubRows() {
     var rows = document.getElementById('perfSubRows');
     var arrow = document.getElementById('perfSubArrow');
@@ -308,6 +387,7 @@ function togglePerfSubRows() {
         rows.style.display = 'none';
         arrow.style.transform = 'rotate(0deg)';
     }
+    syncToSupabase();
 }
 
 function toggleSubAssembly() {
@@ -320,21 +400,24 @@ function toggleSubAssembly() {
         rows.style.display = 'none';
         arrow.style.transform = 'rotate(0deg)';
     }
+    syncToSupabase();
 }
 
+// === 项目状态更新 ===
 function updateProjStatus(select) {
     select.dataset.status = select.value;
     select.style.color = select.value === '进行中' ? 'var(--state-success)' : select.value === '暂停' ? 'var(--state-warning)' : 'var(--hub-text-dim)';
     updateDashboardKPIs();
+    syncToSupabase();
 }
 
+// === 删除项目列 ===
 function deleteProjectColumn(btn) {
     var th = btn.closest('th');
     var thIndex = Array.from(th.parentNode.children).indexOf(th);
     if (thIndex < 1) return;
 
     th.remove();
-
     var table = document.querySelector('.matrix-table');
     table.querySelectorAll('tbody tr').forEach(function(row) {
         var cells = row.querySelectorAll('td');
@@ -343,115 +426,23 @@ function deleteProjectColumn(btn) {
             firstTd.colSpan = parseInt(firstTd.colSpan) - 1;
             return;
         }
-        if (cells[thIndex]) {
-            cells[thIndex].remove();
-        }
+        if (cells[thIndex]) cells[thIndex].remove();
     });
     updateDashboardKPIs();
+    syncToSupabase();
 }
 
+// === 新增项目列（表头+按钮） ===
 function showAddProjectColumnModal() {
     var name = prompt('输入项目名称');
     if (!name || !name.trim()) return;
     name = name.trim();
-
-    var plusTh = document.querySelector('#matrixHead tr th:last-child');
-    var newTh = document.createElement('th');
-    newTh.style.cssText = 'text-align:center;min-width:64px;position:relative;';
-    newTh.innerHTML = name +
-        '<button class="col-del-btn" title="删除项目 ' + name + '" onclick="deleteProjectColumn(this)">&times;</button>' +
-        '<select class="proj-status-select" data-status="规划中" onchange="updateProjStatus(this)" style="color:var(--hub-text-dim);"><option>进行中</option><option>暂停</option><option selected>规划中</option></select>';
-    plusTh.parentNode.insertBefore(newTh, plusTh);
-
-    var table = document.querySelector('.matrix-table');
-    table.querySelectorAll('tbody tr').forEach(function(row) {
-        var cells = row.querySelectorAll('td');
-        if (cells.length === 0) return;
-
-        var firstTd = cells[0];
-        if (firstTd && firstTd.hasAttribute('colspan') && cells.length === 1) {
-            firstTd.colSpan = parseInt(firstTd.colSpan) + 1;
-            return;
-        }
-
-        var newTd = document.createElement('td');
-        newTd.style.textAlign = 'center';
-
-        var rowNameEl = row.querySelector('.proj-name');
-        var rowName = rowNameEl ? rowNameEl.textContent.trim().replace(/^[├└]\s*/, '').replace(/ ▸.*/, '') : '';
-
-        var lastCell = cells[cells.length - 1];
-        if (lastCell && lastCell.dataset && lastCell.dataset.type === 'text') {
-            newTd.dataset.type = 'text';
-            newTd.setAttribute('onclick', 'showTextEditor(event,this,\'' + name + '\',\'' + rowName + '\')');
-            newTd.innerHTML = '<span class="dts-cell-display text-[12px] text-hub-text-dim cursor-pointer" title="点击编辑">-</span>';
-        } else if (rowName === '交付') {
-            newTd.dataset.type = 'select';
-            newTd.setAttribute('onclick', 'showPercentEditor(event,this,\'' + name + '\',\'' + rowName + '\')');
-            newTd.innerHTML = '<span class="dts-cell-display text-[12px] font-semibold text-hub-text-dim cursor-pointer" title="点击选择">0%</span>';
-        } else if (lastCell && lastCell.dataset && lastCell.dataset.type === 'select') {
-            var selectOptions = [];
-            if (rowName === '项目阶段') selectOptions = ['造型阶段', '方案阶段', '工艺阶段', 'NC阶段'];
-            else if (rowName === '是否完成') selectOptions = ['未评审', '已评审', '部分评审'];
-            else selectOptions = ['选项1', '选项2', '选项3'];
-            newTd.dataset.type = 'select';
-            newTd.setAttribute('onclick', 'showSelectEditor(event,this,\'' + name + '\',\'' + rowName + '\',' + JSON.stringify(selectOptions) + ')');
-            newTd.innerHTML = '<span class="dts-cell-display text-[12px] text-hub-text-dim cursor-pointer" title="点击选择">-</span>';
-        } else if (lastCell && lastCell.querySelector('.dts-cell-display')) {
-            var hasStatus = lastCell.querySelector('.status-cell');
-            if (hasStatus) {
-                newTd.setAttribute('onclick', 'showCellEditor(event,this,\'' + name + '\',\'' + rowName + '\')');
-                newTd.dataset.status = 'na';
-                newTd.dataset.pct = '0';
-                newTd.dataset.note = '';
-                newTd.innerHTML = '<span class="dts-cell-display" style="display:flex;flex-direction:column;align-items:center;gap:1px;cursor:pointer;"><span class="status-cell na">-</span><span style="font-size:12px;font-weight:600;color:var(--hub-text-dim);">0%</span></span>';
-            } else {
-                newTd.innerHTML = '<span class="dts-cell-display text-[12px] text-hub-text-dim cursor-pointer" title="点击编辑">-</span>';
-            }
-        } else if (lastCell && lastCell.querySelector('.role-name-cell')) {
-            newTd.innerHTML = '<span class="role-name-cell" onclick="editRoleName(this)" style="font-size:12px;color:var(--hub-text-secondary);cursor:pointer;border-bottom:1px dashed transparent;padding-bottom:1px;" title="点击编辑">-</span>';
-        } else {
-            newTd.innerHTML = '<span class="dts-cell-display text-[12px] text-hub-text-dim cursor-pointer" title="点击编辑">-</span>';
-        }
-        row.appendChild(newTd);
-    });
+    addProjectColumnToTable(name, '规划中');
     updateDashboardKPIs();
+    syncToSupabase();
 }
 
-function filterTable() {
-    var dept = document.getElementById('filterDept').value;
-    var level = document.getElementById('filterLevel').value;
-    var labor = document.getElementById('filterLabor').value;
-    var search = document.querySelector('.custom-search').value.trim().toLowerCase();
-    var rows = document.querySelectorAll('#personnelBody tr');
-    rows.forEach(function(row) {
-        var matchDept = !dept || row.dataset.dept === dept;
-        var matchLevel = !level || row.dataset.level === level;
-        var matchLabor = !labor || row.dataset.labor === labor;
-        var matchSearch = !search || row.textContent.toLowerCase().indexOf(search) > -1;
-        row.style.display = (matchDept && matchLevel && matchLabor && matchSearch) ? '' : 'none';
-    });
-}
-
-function showAddProjectModal() {
-    document.getElementById('modalOverlay').style.display = 'block';
-    document.getElementById('addProjectModal').style.display = 'block';
-    document.getElementById('projectName').focus();
-}
-
-function closeModal(modalId) {
-    document.getElementById('modalOverlay').style.display = 'none';
-    document.getElementById(modalId).style.display = 'none';
-}
-
-function addProject() {
-    var name = document.getElementById('projectName').value.trim();
-    var status = document.getElementById('projectStatus').value;
-    if (!name) {
-        alert('请输入项目名称');
-        return;
-    }
-
+function addProjectColumnToTable(name, status) {
     var plusTh = document.querySelector('#matrixHead tr th:last-child');
     var newTh = document.createElement('th');
     newTh.style.cssText = 'text-align:center;min-width:64px;position:relative;';
@@ -513,14 +504,52 @@ function addProject() {
         }
         row.appendChild(newTd);
     });
+}
+
+// === 筛选 ===
+function filterTable() {
+    var dept = document.getElementById('filterDept').value;
+    var level = document.getElementById('filterLevel').value;
+    var labor = document.getElementById('filterLabor').value;
+    var search = document.querySelector('.custom-search').value.trim().toLowerCase();
+    var rows = document.querySelectorAll('#personnelBody tr');
+    rows.forEach(function(row) {
+        var matchDept = !dept || row.dataset.dept === dept;
+        var matchLevel = !level || row.dataset.level === level;
+        var matchLabor = !labor || row.dataset.labor === labor;
+        var matchSearch = !search || row.textContent.toLowerCase().indexOf(search) > -1;
+        row.style.display = (matchDept && matchLevel && matchLabor && matchSearch) ? '' : 'none';
+    });
+}
+
+// === 项目弹窗 ===
+function showAddProjectModal() {
+    document.getElementById('modalOverlay').style.display = 'block';
+    document.getElementById('addProjectModal').style.display = 'block';
+    document.getElementById('projectName').focus();
+}
+
+function closeModal(modalId) {
+    document.getElementById('modalOverlay').style.display = 'none';
+    document.getElementById(modalId).style.display = 'none';
+}
+
+function addProject() {
+    var name = document.getElementById('projectName').value.trim();
+    var status = document.getElementById('projectStatus').value;
+    if (!name) { alert('请输入项目名称'); return; }
+
+    addProjectColumnToTable(name, status);
 
     closeModal('addProjectModal');
     document.getElementById('projectName').value = '';
     document.getElementById('projectStatus').value = '进行中';
     updateDashboardKPIs();
     updateStatsPage();
+    syncToSupabase();
 }
 
+// === 人员库 ===
 function showAddPersonnelModal() {
     document.getElementById('personnelModalTitle').textContent = '新增人员';
     document.getElementById('personnelId').value = '';
@@ -570,10 +599,7 @@ function savePersonnel() {
     var ratio = document.getElementById('personnelRatio').value.trim();
     var status = document.getElementById('personnelStatus').value;
 
-    if (!name) {
-        alert('请输入姓名');
-        return;
-    }
+    if (!name) { alert('请输入姓名'); return; }
 
     var id = document.getElementById('personnelId').value;
     var tbody = document.getElementById('personnelBody');
@@ -621,6 +647,7 @@ function savePersonnel() {
     closeModal('personnelModal');
     updateDashboardKPIs();
     updateStatsPage();
+    syncToSupabase();
 }
 
 function deletePersonnel(btn) {
@@ -629,9 +656,11 @@ function deletePersonnel(btn) {
         row.remove();
         updateDashboardKPIs();
         updateStatsPage();
+        syncToSupabase();
     }
 }
 
+// === 统计页面 ===
 function updateStatsPage() {
     var rows = document.querySelectorAll('#personnelBody tr');
     var total = rows.length;
@@ -669,12 +698,14 @@ function updateStatsPage() {
     });
 }
 
+// === 关闭所有弹窗 ===
 function closeAllModals() {
     document.getElementById('modalOverlay').style.display = 'none';
     var modals = document.querySelectorAll('.modal');
     modals.forEach(function(m) { m.style.display = 'none'; });
 }
 
+// === 文本编辑器 ===
 function showTextEditor(e, td, proj, ms) {
     e.stopPropagation();
     if (activePopup) { activePopup.remove(); activePopup = null; }
@@ -687,20 +718,15 @@ function showTextEditor(e, td, proj, ms) {
     popup.innerHTML = '<div class="popup-row"><label>' + ms + '</label><input type="text" id="teValue" value="' + currentVal + '" placeholder="输入内容..."></div><div class="popup-actions"><button class="popup-btn popup-btn-cancel" onclick="closeCellEditor()">取消</button><button class="popup-btn popup-btn-primary" onclick="saveTextEditor()">确定</button></div>';
     document.body.appendChild(popup);
     activePopup = popup;
-    
+
     var popupRect = popup.getBoundingClientRect();
     var left = rect.left + rect.width / 2 - popupRect.width / 2;
     var top = rect.bottom + 6;
-    
-    if (top + popupRect.height > window.innerHeight) {
-        top = rect.top - popupRect.height - 6;
-    }
+    if (top + popupRect.height > window.innerHeight) top = rect.top - popupRect.height - 6;
     if (left < 0) left = 10;
     if (left + popupRect.width > window.innerWidth) left = window.innerWidth - popupRect.width - 10;
-    
     popup.style.left = left + 'px';
     popup.style.top = top + 'px';
-    
     document.getElementById('teValue').focus();
 }
 
@@ -716,10 +742,10 @@ function saveTextEditor() {
         display.className = 'dts-cell-display text-[12px] text-hub-text-dim cursor-pointer';
     }
     closeCellEditor();
+    syncToSupabase();
 }
 
-var activeSelectCell = null;
-
+// === 百分比编辑器 ===
 function showPercentEditor(e, td, proj, ms) {
     e.stopPropagation();
     if (activePopup) { activePopup.remove(); activePopup = null; }
@@ -738,17 +764,13 @@ function showPercentEditor(e, td, proj, ms) {
     popup.innerHTML = optionsHtml + '<div class="popup-actions"><button class="popup-btn popup-btn-cancel" onclick="closeCellEditor()">取消</button><button class="popup-btn popup-btn-primary" onclick="savePercentEditor()">确定</button></div>';
     document.body.appendChild(popup);
     activePopup = popup;
-    
+
     var popupRect = popup.getBoundingClientRect();
     var left = rect.left + rect.width / 2 - popupRect.width / 2;
     var top = rect.bottom + 6;
-    
-    if (top + popupRect.height > window.innerHeight) {
-        top = rect.top - popupRect.height - 6;
-    }
+    if (top + popupRect.height > window.innerHeight) top = rect.top - popupRect.height - 6;
     if (left < 0) left = 10;
     if (left + popupRect.width > window.innerWidth) left = window.innerWidth - popupRect.width - 10;
-    
     popup.style.left = left + 'px';
     popup.style.top = top + 'px';
 }
@@ -767,8 +789,10 @@ function savePercentEditor() {
     display.className = 'dts-cell-display text-[12px] font-semibold ' + colorClass + ' cursor-pointer';
     closeCellEditor();
     activeSelectCell = null;
+    syncToSupabase();
 }
 
+// === 下拉选择编辑器 ===
 function showSelectEditor(e, td, proj, ms, options) {
     e.stopPropagation();
     if (activePopup) { activePopup.remove(); activePopup = null; }
@@ -787,17 +811,13 @@ function showSelectEditor(e, td, proj, ms, options) {
     popup.innerHTML = optionsHtml + '<div class="popup-actions"><button class="popup-btn popup-btn-cancel" onclick="closeCellEditor()">取消</button><button class="popup-btn popup-btn-primary" onclick="saveSelectEditor()">确定</button></div>';
     document.body.appendChild(popup);
     activePopup = popup;
-    
+
     var popupRect = popup.getBoundingClientRect();
     var left = rect.left + rect.width / 2 - popupRect.width / 2;
     var top = rect.bottom + 6;
-    
-    if (top + popupRect.height > window.innerHeight) {
-        top = rect.top - popupRect.height - 6;
-    }
+    if (top + popupRect.height > window.innerHeight) top = rect.top - popupRect.height - 6;
     if (left < 0) left = 10;
     if (left + popupRect.width > window.innerWidth) left = window.innerWidth - popupRect.width - 10;
-    
     popup.style.left = left + 'px';
     popup.style.top = top + 'px';
 }
@@ -823,8 +843,10 @@ function saveSelectEditor() {
     }
     closeCellEditor();
     activeSelectCell = null;
+    syncToSupabase();
 }
 
+// === 导入导出 ===
 function importData() {
     var input = document.createElement('input');
     input.type = 'file';
@@ -862,6 +884,7 @@ function importData() {
                 }
                 updateDashboardKPIs();
                 updateStatsPage();
+                syncToSupabase();
                 alert('数据导入成功！');
             } catch (err) {
                 alert('导入失败：文件格式错误，请使用JSON格式');
@@ -895,20 +918,14 @@ function exportData() {
     var ths = document.querySelectorAll('#matrixHead tr th');
     var projects = [];
     ths.forEach(function(th, i) {
-        if (i > 0 && i < ths.length - 1) {
-            projects.push(th.childNodes[0].textContent.trim());
-        }
+        if (i > 0 && i < ths.length - 1) projects.push(th.childNodes[0].textContent.trim());
     });
     matrixData.projects = projects;
 
     var allCells = document.querySelectorAll('.matrix-table td[data-status]');
     var cellData = [];
     allCells.forEach(function(cell) {
-        cellData.push({
-            status: cell.dataset.status,
-            pct: cell.dataset.pct,
-            note: cell.dataset.note || ''
-        });
+        cellData.push({ status: cell.dataset.status, pct: cell.dataset.pct, note: cell.dataset.note || '' });
     });
     matrixData.cells = cellData;
 
