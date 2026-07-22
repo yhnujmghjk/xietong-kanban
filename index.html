@@ -164,10 +164,10 @@
                                 <thead id="matrixHead">
                                     <tr>
                                         <th style="white-space:nowrap;min-width:120px;">里程碑 \ 项目</th>
-                                        <th style="text-align:center;min-width:64px;position:relative;border-right:1px solid var(--hub-border);">
+                                        <th style="text-align:center;min-width:64px;position:relative;">
                                             FI
                                             <button class="col-del-btn" title="删除项目 FI" onclick="deleteProjectColumn(this)">&times;</button>
-                                            <select class="proj-status-select" data-status="进行中" onchange="updateProjStatus(this)" style="color:var(--state-success);"><option selected>进行中</option><option>暂停</option><option>规划中</option></select>
+                                            <select class="proj-status-select" data-status="进行中" onchange="updateProjStatus(this)"><option selected>进行中</option><option>暂停</option><option>规划中</option></select>
                                         </th>
                                         <th style="text-align:center;min-width:64px;position:relative;">
                                             <span class="text-hub-text-dim cursor-pointer text-base" title="添加项目" onclick="showAddProjectColumnModal()">+</span>
@@ -179,44 +179,44 @@
                                         <td style="white-space:nowrap;">
                                             <div class="proj-name text-[11px] text-hub-text-dim font-semibold uppercase tracking-[0.5px]">角色信息</div>
                                         </td>
-                                        <td style="border-right:1px solid var(--hub-border);"></td>
+                                        <td></td>
                                     </tr>
                                     <tr>
                                         <td style="white-space:nowrap;border-bottom:2px solid var(--hub-border);">
                                             <div class="proj-name">分项目经理</div>
                                         </td>
-                                        <td style="text-align:center;border-bottom:2px solid var(--hub-border);border-right:1px solid var(--hub-border);"><span class="role-name-cell" onclick="editRoleName(this)">张三</span></td>
+                                        <td style="text-align:center;border-bottom:2px solid var(--hub-border);"><span class="role-name-cell" onclick="editRoleName(this)">张三</span></td>
                                     </tr>
                                     <tr>
                                         <td style="white-space:nowrap;border-bottom:2px solid var(--hub-border);">
                                             <div class="proj-name">质量经理</div>
                                         </td>
-                                        <td style="text-align:center;border-bottom:2px solid var(--hub-border);border-right:1px solid var(--hub-border);"><span class="role-name-cell" onclick="editRoleName(this)">李四</span></td>
+                                        <td style="text-align:center;border-bottom:2px solid var(--hub-border);"><span class="role-name-cell" onclick="editRoleName(this)">李四</span></td>
                                     </tr>
                                     <tr id="subAssemblyToggle" onclick="toggleSubAssembly()">
                                         <td style="white-space:nowrap;border-bottom:2px solid var(--hub-border);">
                                             <div class="proj-name flex items-center gap-1.5">总成负责人 <span id="subAssemblyArrow" class="text-[10px] text-hub-text-dim transition-transform inline-block">▸</span></div>
                                         </td>
-                                        <td style="text-align:center;border-bottom:2px solid var(--hub-border);border-right:1px solid var(--hub-border);"></td>
+                                        <td style="text-align:center;border-bottom:2px solid var(--hub-border);"></td>
                                     </tr>
                                     <tbody id="subAssemblyRows" style="display:none;">
                                         <tr style="background:rgba(79,140,255,0.04);">
                                             <td style="white-space:nowrap;padding-left:1.5rem;">
                                                 <div class="proj-name text-sm text-hub-text-secondary">└ 上车体</div>
                                             </td>
-                                            <td style="text-align:center;border-right:1px solid var(--hub-border);"><span class="role-name-cell" onclick="editRoleName(this)">-</span></td>
+                                            <td style="text-align:center;"><span class="role-name-cell" onclick="editRoleName(this)">-</span></td>
                                         </tr>
                                         <tr style="background:rgba(79,140,255,0.04);">
                                             <td style="white-space:nowrap;padding-left:1.5rem;">
                                                 <div class="proj-name text-sm text-hub-text-secondary">├ 下车体</div>
                                             </td>
-                                            <td style="text-align:center;border-right:1px solid var(--hub-border);"><span class="role-name-cell" onclick="editRoleName(this)">王五</span></td>
+                                            <td style="text-align:center;"><span class="role-name-cell" onclick="editRoleName(this)">王五</span></td>
                                         </tr>
                                         <tr style="background:rgba(79,140,255,0.04);">
                                             <td style="white-space:nowrap;padding-left:1.5rem;">
                                                 <div class="proj-name text-sm text-hub-text-secondary">└ 开闭件</div>
                                             </td>
-                                            <td style="text-align:center;border-right:1px solid var(--hub-border);"><span class="role-name-cell" onclick="editRoleName(this)">-</span></td>
+                                            <td style="text-align:center;"><span class="role-name-cell" onclick="editRoleName(this)">-</span></td>
                                         </tr>
                                     </tbody>
 
@@ -226,52 +226,52 @@
                                         <td style="white-space:nowrap;">
                                             <div class="proj-name text-[11px] text-hub-text-dim font-semibold uppercase tracking-[0.5px]">技术交付</div>
                                         </td>
-                                        <td style="border-right:1px solid var(--hub-border);"></td>
+                                        <td></td>
                                     </tr>
 
                                     <tr>
                                         <td style="white-space:nowrap;">
                                             <div class="proj-name">DTS</div>
                                         </td>
-                                        <td style="text-align:center;border-right:1px solid var(--hub-border);" onclick="showCellEditor(event,this,'FI','DTS')" data-status="ok" data-pct="80"><span class="dts-cell-display"><span class="status-cell ok">✓</span><span class="text-[12px] font-semibold text-[#34d399]">80%</span></span></td>
+                                        <td style="text-align:center;" onclick="showCellEditor(event,this,'FI','DTS')" data-status="ok" data-pct="80"><span class="dts-cell-display"><span class="status-cell ok">✓</span><span class="text-[12px] font-semibold text-[#34d399]">80%</span></span></td>
                                     </tr>
                                     <tr>
                                         <td style="white-space:nowrap;">
                                             <div class="proj-name">技术方案</div>
                                         </td>
-                                        <td style="text-align:center;border-right:1px solid var(--hub-border);" onclick="showCellEditor(event,this,'FI','技术方案')" data-status="ok" data-pct="60"><span class="dts-cell-display"><span class="status-cell ok">✓</span><span class="text-[12px] font-semibold text-[#34d399]">60%</span></span></td>
+                                        <td style="text-align:center;" onclick="showCellEditor(event,this,'FI','技术方案')" data-status="ok" data-pct="60"><span class="dts-cell-display"><span class="status-cell ok">✓</span><span class="text-[12px] font-semibold text-[#34d399]">60%</span></span></td>
                                     </tr>
                                     <tr>
                                         <td style="white-space:nowrap;">
                                             <div class="proj-name">主断面</div>
                                         </td>
-                                        <td style="text-align:center;border-right:1px solid var(--hub-border);" onclick="showCellEditor(event,this,'FI','主断面')" data-status="ok" data-pct="70"><span class="dts-cell-display"><span class="status-cell ok">✓</span><span class="text-[12px] font-semibold text-[#34d399]">70%</span></span></td>
+                                        <td style="text-align:center;" onclick="showCellEditor(event,this,'FI','主断面')" data-status="ok" data-pct="70"><span class="dts-cell-display"><span class="status-cell ok">✓</span><span class="text-[12px] font-semibold text-[#34d399]">70%</span></span></td>
                                     </tr>
 
                                     <tr onclick="togglePerfSubRows()">
                                         <td style="white-space:nowrap;">
                                             <div class="proj-name flex items-center gap-1.5">性能指标 <span id="perfSubArrow" class="text-[10px] text-hub-text-dim transition-transform inline-block">▸</span></div>
                                         </td>
-                                        <td style="border-right:1px solid var(--hub-border);"></td>
+                                        <td></td>
                                     </tr>
                                     <tbody id="perfSubRows" style="display:none;">
                                         <tr style="background:rgba(79,140,255,0.04);">
                                             <td style="white-space:nowrap;padding-left:1.5rem;">
                                                 <div class="proj-name text-sm text-hub-text-secondary">├ 碰撞</div>
                                             </td>
-                                            <td style="text-align:center;border-right:1px solid var(--hub-border);" onclick="showCellEditor(event,this,'FI','碰撞')" data-status="ok" data-pct="85"><span class="dts-cell-display"><span class="status-cell ok">✓</span><span class="text-[12px] font-semibold text-[#34d399]">85%</span></span></td>
+                                            <td style="text-align:center;" onclick="showCellEditor(event,this,'FI','碰撞')" data-status="ok" data-pct="85"><span class="dts-cell-display"><span class="status-cell ok">✓</span><span class="text-[12px] font-semibold text-[#34d399]">85%</span></span></td>
                                         </tr>
                                         <tr style="background:rgba(79,140,255,0.04);">
                                             <td style="white-space:nowrap;padding-left:1.5rem;">
                                                 <div class="proj-name text-sm text-hub-text-secondary">├ 扭转</div>
                                             </td>
-                                            <td style="text-align:center;border-right:1px solid var(--hub-border);" onclick="showCellEditor(event,this,'FI','扭转')" data-status="ok" data-pct="95"><span class="dts-cell-display"><span class="status-cell ok">✓</span><span class="text-[12px] font-semibold text-[#34d399]">95%</span></span></td>
+                                            <td style="text-align:center;" onclick="showCellEditor(event,this,'FI','扭转')" data-status="ok" data-pct="95"><span class="dts-cell-display"><span class="status-cell ok">✓</span><span class="text-[12px] font-semibold text-[#34d399]">95%</span></span></td>
                                         </tr>
                                         <tr style="background:rgba(79,140,255,0.04);">
                                             <td style="white-space:nowrap;padding-left:1.5rem;">
                                                 <span id="customOptLabel" class="text-sm text-hub-text-dim cursor-pointer border border-dashed border-hub-border rounded px-2 py-0.5" onclick="event.stopPropagation();editCustomOptLabel(this)">+ 添加选项</span>
                                             </td>
-                                            <td style="text-align:center;border-right:1px solid var(--hub-border);" onclick="showCellEditor(event,this,'FI','新选项')" data-status="na" data-pct="0"><span class="dts-cell-display"><span class="status-cell na">-</span><span class="text-[12px] font-semibold text-hub-text-dim">0%</span></span></td>
+                                            <td style="text-align:center;" onclick="showCellEditor(event,this,'FI','新选项')" data-status="na" data-pct="0"><span class="dts-cell-display"><span class="status-cell na">-</span><span class="text-[12px] font-semibold text-hub-text-dim">0%</span></span></td>
                                         </tr>
                                     </tbody>
 
@@ -281,22 +281,22 @@
                                         <td style="white-space:nowrap;">
                                             <div class="proj-name text-[11px] text-hub-text-dim font-semibold uppercase tracking-[0.5px]">质量评审</div>
                                         </td>
-                                        <td style="border-right:1px solid var(--hub-border);"></td>
+                                        <td></td>
                                     </tr>
                                     <tr><td style="white-space:nowrap;"><div class="proj-name">评审主题</div></td>
-                                        <td style="text-align:center;border-right:1px solid var(--hub-border);" onclick="showTextEditor(event,this,'FI','评审主题')" data-type="text"><span class="dts-cell-display text-[12px] text-hub-text-dim cursor-pointer" title="点击编辑">-</span></td>
+                                        <td style="text-align:center;" onclick="showTextEditor(event,this,'FI','评审主题')" data-type="text"><span class="dts-cell-display text-[12px] text-hub-text-dim cursor-pointer" title="点击编辑">-</span></td>
                                     </tr>
                                     <tr><td style="white-space:nowrap;"><div class="proj-name">评审内容</div></td>
-                                        <td style="text-align:center;border-right:1px solid var(--hub-border);" onclick="showTextEditor(event,this,'FI','评审内容')" data-type="text"><span class="dts-cell-display text-[12px] text-hub-text-dim cursor-pointer" title="点击编辑">-</span></td>
+                                        <td style="text-align:center;" onclick="showTextEditor(event,this,'FI','评审内容')" data-type="text"><span class="dts-cell-display text-[12px] text-hub-text-dim cursor-pointer" title="点击编辑">-</span></td>
                                     </tr>
                                     <tr><td style="white-space:nowrap;"><div class="proj-name">项目阶段</div></td>
-                                        <td style="text-align:center;border-right:1px solid var(--hub-border);" onclick="showSelectEditor(event,this,'FI','项目阶段',['造型阶段','方案阶段','工艺阶段','NC阶段'])" data-type="select"><span class="dts-cell-display text-[12px] text-hub-text-dim cursor-pointer" title="点击选择">-</span></td>
+                                        <td style="text-align:center;" onclick="showSelectEditor(event,this,'FI','项目阶段',['造型阶段','方案阶段','工艺阶段','NC阶段'])" data-type="select"><span class="dts-cell-display text-[12px] text-hub-text-dim cursor-pointer" title="点击选择">-</span></td>
                                     </tr>
                                     <tr><td style="white-space:nowrap;"><div class="proj-name">是否完成</div></td>
-                                        <td style="text-align:center;border-right:1px solid var(--hub-border);" onclick="showSelectEditor(event,this,'FI','是否完成',['未评审','已评审','部分评审'])" data-type="select"><span class="dts-cell-display text-[12px] text-hub-text-dim cursor-pointer" title="点击选择">-</span></td>
+                                        <td style="text-align:center;" onclick="showSelectEditor(event,this,'FI','是否完成',['未评审','已评审','部分评审'])" data-type="select"><span class="dts-cell-display text-[12px] text-hub-text-dim cursor-pointer" title="点击选择">-</span></td>
                                     </tr>
                                     <tr><td style="white-space:nowrap;"><div class="proj-name">交付</div></td>
-                                        <td style="text-align:center;border-right:1px solid var(--hub-border);" onclick="showPercentEditor(event,this,'FI','交付')" data-type="select"><span class="dts-cell-display text-[12px] font-semibold text-hub-text-dim cursor-pointer" title="点击选择">0%</span></td>
+                                        <td style="text-align:center;" onclick="showPercentEditor(event,this,'FI','交付')" data-type="select"><span class="dts-cell-display text-[12px] font-semibold text-hub-text-dim cursor-pointer" title="点击选择">0%</span></td>
                                     </tr>
                                 </tbody>
                             </table>
