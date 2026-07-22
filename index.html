@@ -182,13 +182,13 @@
                                         <td style="white-space:nowrap;border-bottom:2px solid var(--hub-border);">
                                             <div class="proj-name">分项目经理</div>
                                         </td>
-                                        <td style="text-align:center;border-bottom:2px solid var(--hub-border);"><span class="role-name-cell" onclick="editRoleName(this)">张三</span></td>
+                                        <td style="text-align:center;border-bottom:2px solid var(--hub-border);"><span class="role-name-cell" onclick="editRoleName(this)">-</span></td>
                                     </tr>
                                     <tr>
                                         <td style="white-space:nowrap;border-bottom:2px solid var(--hub-border);">
                                             <div class="proj-name">质量经理</div>
                                         </td>
-                                        <td style="text-align:center;border-bottom:2px solid var(--hub-border);"><span class="role-name-cell" onclick="editRoleName(this)">李四</span></td>
+                                        <td style="text-align:center;border-bottom:2px solid var(--hub-border);"><span class="role-name-cell" onclick="editRoleName(this)">-</span></td>
                                     </tr>
                                     <tr id="subAssemblyToggle" onclick="toggleSubAssembly()">
                                         <td style="white-space:nowrap;border-bottom:2px solid var(--hub-border);">
@@ -207,7 +207,7 @@
                                             <td style="white-space:nowrap;padding-left:1.5rem;">
                                                 <div class="proj-name text-sm text-hub-text-secondary">├ 下车体</div>
                                             </td>
-                                            <td style="text-align:center;"><span class="role-name-cell" onclick="editRoleName(this)">王五</span></td>
+                                            <td style="text-align:center;"><span class="role-name-cell" onclick="editRoleName(this)">-</span></td>
                                         </tr>
                                         <tr style="background:rgba(79,140,255,0.04);">
                                             <td style="white-space:nowrap;padding-left:1.5rem;">
@@ -230,19 +230,19 @@
                                         <td style="white-space:nowrap;">
                                             <div class="proj-name">DTS</div>
                                         </td>
-                                        <td style="text-align:center;" onclick="showCellEditor(event,this,'FI','DTS')" data-status="ok" data-pct="80"><span class="dts-cell-display"><span class="status-cell ok">✓</span><span class="text-[12px] font-semibold text-[#34d399]">80%</span></span></td>
+                                        <td style="text-align:center;" onclick="showCellEditor(event,this,'FI','DTS')" data-status="na" data-pct="0"><span class="dts-cell-display"><span class="status-cell na">-</span><span class="text-[12px] font-semibold text-hub-text-dim">0%</span></span></td>
                                     </tr>
                                     <tr>
                                         <td style="white-space:nowrap;">
                                             <div class="proj-name">技术方案</div>
                                         </td>
-                                        <td style="text-align:center;" onclick="showCellEditor(event,this,'FI','技术方案')" data-status="ok" data-pct="60"><span class="dts-cell-display"><span class="status-cell ok">✓</span><span class="text-[12px] font-semibold text-[#34d399]">60%</span></span></td>
+                                        <td style="text-align:center;" onclick="showCellEditor(event,this,'FI','技术方案')" data-status="na" data-pct="0"><span class="dts-cell-display"><span class="status-cell na">-</span><span class="text-[12px] font-semibold text-hub-text-dim">0%</span></span></td>
                                     </tr>
                                     <tr>
                                         <td style="white-space:nowrap;">
                                             <div class="proj-name">主断面</div>
                                         </td>
-                                        <td style="text-align:center;" onclick="showCellEditor(event,this,'FI','主断面')" data-status="ok" data-pct="70"><span class="dts-cell-display"><span class="status-cell ok">✓</span><span class="text-[12px] font-semibold text-[#34d399]">70%</span></span></td>
+                                        <td style="text-align:center;" onclick="showCellEditor(event,this,'FI','主断面')" data-status="na" data-pct="0"><span class="dts-cell-display"><span class="status-cell na">-</span><span class="text-[12px] font-semibold text-hub-text-dim">0%</span></span></td>
                                     </tr>
 
                                     <tr onclick="togglePerfSubRows()">
@@ -256,13 +256,13 @@
                                             <td style="white-space:nowrap;padding-left:1.5rem;">
                                                 <div class="proj-name text-sm text-hub-text-secondary">├ 碰撞</div>
                                             </td>
-                                            <td style="text-align:center;" onclick="showCellEditor(event,this,'FI','碰撞')" data-status="ok" data-pct="85"><span class="dts-cell-display"><span class="status-cell ok">✓</span><span class="text-[12px] font-semibold text-[#34d399]">85%</span></span></td>
+                                            <td style="text-align:center;" onclick="showCellEditor(event,this,'FI','碰撞')" data-status="na" data-pct="0"><span class="dts-cell-display"><span class="status-cell na">-</span><span class="text-[12px] font-semibold text-hub-text-dim">0%</span></span></td>
                                         </tr>
                                         <tr style="background:rgba(79,140,255,0.04);">
                                             <td style="white-space:nowrap;padding-left:1.5rem;">
                                                 <div class="proj-name text-sm text-hub-text-secondary">├ 扭转</div>
                                             </td>
-                                            <td style="text-align:center;" onclick="showCellEditor(event,this,'FI','扭转')" data-status="ok" data-pct="95"><span class="dts-cell-display"><span class="status-cell ok">✓</span><span class="text-[12px] font-semibold text-[#34d399]">95%</span></span></td>
+                                            <td style="text-align:center;" onclick="showCellEditor(event,this,'FI','扭转')" data-status="na" data-pct="0"><span class="dts-cell-display"><span class="status-cell na">-</span><span class="text-[12px] font-semibold text-hub-text-dim">0%</span></span></td>
                                         </tr>
                                         <tr style="background:rgba(79,140,255,0.04);">
                                             <td style="white-space:nowrap;padding-left:1.5rem;">
