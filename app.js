@@ -137,7 +137,7 @@ function applyState(state) {
 }
 
 function syncToSupabase() {
-    if (!sb || isRemoteUpdate) return;
+    if (!sb) return;
     if (syncTimer) clearTimeout(syncTimer);
     syncTimer = setTimeout(async function() {
         var state = collectState();
@@ -475,6 +475,7 @@ function editRoleName(span) {
         span.textContent = val || '-';
         span.style.display = '';
         if (input.parentNode) input.remove();
+        updateDashboardKPIs();
         syncToSupabase();
     }
 
@@ -558,10 +559,11 @@ function addProjectColumnToTable(name, status) {
         var rowNameEl = row.querySelector('.proj-name');
         var rowName = rowNameEl ? rowNameEl.textContent.trim().replace(/^[├└]\s*/, '').replace(/ ▸.*/, '') : '';
 
-        // 分组标题行（角色信息、技术交付、质量评审、总成负责人、性能指标）不显示任何内容
+        // 分组标题行（角色信息、技术交付、质量评审）不显示任何内容
+        // 总成负责人、性能指标是可折叠行，标题行本身不显示内容，但子行需要显示
         var firstCellText = cells[0].textContent.trim();
         if (firstCellText === '角色信息' || firstCellText === '技术交付' || firstCellText === '质量评审' ||
-            firstCellText.indexOf('总成负责人') === 0 || firstCellText.indexOf('性能指标') === 0) {
+            firstCellText === '总成负责人' || firstCellText === '性能指标') {
             row.appendChild(newTd);
             return;
         }
